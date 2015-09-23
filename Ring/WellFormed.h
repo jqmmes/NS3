@@ -1,0 +1,175 @@
+#ifndef WellFormed_H
+#define WellFormed_H
+
+#include <iostream>
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/wifi-module.h"
+#include "ns3/internet-module.h"
+
+#include "VirtualDiscovery.h"
+#include <climits>
+
+
+using namespace ns3;
+using namespace std;
+
+/*! A class implementing a Star overlay with communications with a server */
+class WellFormed : public Application
+{
+public:
+
+  WellFormed();
+  virtual ~WellFormed();
+  void Setup(VirtualDiscovery *discovery, bool messages, bool churn, bool random_sleep, uint32_t sleep_duration_min, uint32_t sleep_duration_max, uint32_t fixed_sleep_duration, string list_update_type, uint32_t list_update_time, uint32_t duration, Ptr<UniformRandomVariable> rand, bool to_trace, fstream *trace, string churn_int);
+
+private:
+
+  // Application
+  virtual void StartApplication (void);
+  virtual void StopApplication (void);
+
+  // Private
+  bool ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from);
+  void AcceptConnection(Ptr<Socket> socket, const ns3::Address& from);
+  void ConnectSuccess(Ptr<Socket> socket);
+  void ConnectFail(Ptr<Socket> socket);
+  void NormalClose(Ptr<Socket> socket);
+  void ErrorClose(Ptr<Socket> socket);
+  Ptr<Socket> StartSocket(void);
+
+  // Overlay
+  void Leave();
+  void Join();
+
+  // Features
+  bool ReqFile(string fid, Ipv4Address reqAddress = Ipv4Address("0.0.0.0"), bool toServer = false); /*!< Request File from neighours */
+
+  // Comunications
+  void Send(const uint8_t * data, uint32_t size, Ipv4Address d_address, uint16_t port = 0);
+  void Send(string sdata, Ipv4Address d_address, uint16_t port = 0);
+  void Send(stringstream& sdata, Ipv4Address d_address, uint16_t port = 0);
+  void ReceivePacket (Ptr<Socket> socket);
+  void SendPacket(Ptr<Socket> socket, const uint8_t* data, uint32_t size, uint32_t i = 0);
+
+  //Generic
+  uint32_t GetSize(string data);
+  void readPacket(Ptr<Socket> socket, Address from);
+
+  // Variables
+  VirtualDiscovery *    m_discovery = NULL; /*!< Virtual Discovery object shared with all nodes*/
+  vector<string>        m_file_list;
+  Ptr<Socket>           m_socket; /*!< Communication listening socket*/
+  uint32_t              m_packet_size = 1000; /*!< Max packet size */
+  float                 m_delay = 0.02; /*!< Packet Send delay */
+  Ipv4Address           m_address = Ipv4Address("0.0.0.0"); /*!< Node ip address */
+  uint16_t              m_port = 20; /*!< Node communication port */
+  Ipv4Address           m_server = Ipv4Address("10.1.0.1"); /*!< Common server ip address */
+  uint16_t              m_server_port = 9;
+  Ipv4Address           m_left = Ipv4Address("0.0.0.0"); /*!< Left Node neighour ip */
+  uint16_t              m_left_port = 0; /*!< Left Node neighour port */
+  Ipv4Address           m_right = Ipv4Address("0.0.0.0"); /*!< Right Node neighour ip */
+  uint16_t              m_right_port = 0; /*!< Right Node neighour port */
+  Ptr<Packet>           m_packet = Create<Packet> (0);
+  stringstream          m_data;
+  map<Ptr<Socket>, void *> m_map;
+  map<Ptr<Socket>, uint32_t> m_map_last_pos;
+  Ipv4Address           m_master_ip = Ipv4Address("0.0.0.0");
+  uint16_t              m_master_port = 20;
+  map<string, vector<tuple<Ipv4Address,uint16_t>>> m_master_file_list;
+
+  /**
+   * \param uint16_t times file request was generated on this node
+   * Generate Random File Requests over time.
+  **/
+  void genFReqs();
+  bool m_gen_traffic = true;
+  EventId last_event;
+  void updateFileList(void);
+  void updateFileListTimed(bool master = false);
+
+  void updateNodesFileList(void);
+
+  void DoWork(void);
+
+  void BCast(const uint8_t * data, uint32_t size);
+  void BCast(string message);
+  void CompleteJoin(void);
+  void AdvertiseMaster(void);
+  void MakeBridge(void);
+
+  // New params
+  uint32_t n_files_available = 0;
+  uint32_t simulation_duration;
+
+  //Colocar isto a global algures no futuro:
+  bool show_messages = false;
+  bool random_client_sleep = false;
+  bool use_churn = false;
+  bool m_is_running = false;
+  uint32_t client_fixed_sleep_duration = 10;
+  uint32_t client_sleep_duration_min = 1;
+  uint32_t client_sleep_duration_max = 20;
+
+  string file_list_update_type = "server";
+  uint32_t file_list_update_time = 10;
+  vector<tuple<Ipv4Address, uint16_t>> m_master_node_list;
+
+  bool im_master = false;
+
+  string churn_intensity = "low";
+  bool trace_to_file = false;
+  fstream *trace_file;
+  Ptr<UniformRandomVariable> randomGen;
+
+  // Specific to random network formation
+
+  string m_role = "nothing";
+  list<tuple<Ipv4Address, uint16_t>> rejected_connections;
+  list<tuple<Ipv4Address, uint16_t>> connections;
+  uint16_t connections_limit = 6; //A BT node can only be connected to 8 other nodes
+
+  // File communication in this network
+
+  map<Ipv4Address, list<tuple<Ipv4Address, uint16_t>>> NeighourList;
+  map<uint32_t, Ipv4Address> MessageList; // msg_id -> sourcevoid WellFormed::BCast(string message)
+  list<uint32_t> MySentMessages;
+  void CheckFileRequests();
+  string requested_file = "\"File 0\"";
+  //const float delay = 0.5; // Amount of time before going to the server to get file
+  const bool controlHops = true;
+  const uint32_t maxHops = 4;
+
+
+  // Estrategia tabelada
+  bool use_table = false;
+  map<Ipv4Address, vector<Ipv4Address>> tabled_neighours;
+  void TabledSendListTo(Ipv4Address to);
+
+  // WellFormed
+  void isJoin(void);
+  bool only_avail_master = true; // Only masters with space in its own group are visible to the network
+  bool connect_groups = true; // If the groups should be connected or not
+  map<Ipv4Address, bool> group_neighours; // master ip => isFull
+
+  void connectionSucceeded(Ptr<Socket> socket);
+  void connectionFailed(Ptr<Socket> socket);
+  void dataSent(Ptr<Socket> socket, uint32_t size);
+  void sendCb(Ptr<Socket> socket, uint32_t size);
+
+  void inSendChk(void);
+  bool inSending = false;
+  bool debugAll = false;
+  bool debugMin = false;
+  Ipv4Address tryOther = Ipv4Address("0.0.0.0");
+  Time Jinit = Time();
+  Time Jend = Time();
+  void SetItem(string file, Ipv4Address ip);
+  bool allow_hops = true; // Allow multiple hops between groups.
+  void AskNeighbours(string file, Ipv4Address ip);
+  void AskNeighboursTimeout(string file, Ipv4Address ip);
+  map<tuple<string, Ipv4Address>, bool> AskNeighboursStatus;
+};
+
+#endif
