@@ -70,8 +70,11 @@ ns3::NetDeviceContainer WifiDirectadhocDevices;
 ns3::YansWifiChannelHelper channel = ns3::YansWifiChannelHelper::Default ();
 ns3::YansWifiPhyHelper phy = ns3::YansWifiPhyHelper::Default ();
 
-std::string phy_type = "802.11n-150mbps";
-ns3::HtWifiMacHelper mac = ns3::HtWifiMacHelper::Default ();
+std::string phy_type = "802.11ac";
+ns3::VhtWifiMacHelper mac = ns3::VhtWifiMacHelper::Default ();
+
+// std::string phy_type = "802.11n";
+// ns3::HtWifiMacHelper mac = ns3::HtWifiMacHelper::Default ();
 
 // Uncomment if not using 802.11n
 // std::string phy_type = "802.11g-54mbps";

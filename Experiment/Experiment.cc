@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
   //ns3::YansWifiPhyHelper phy_alt = ns3::YansWifiPhyHelper::Default ();
   //phy_alt.SetChannel (channel.Create ());
 
-  if (phy_type == "802.11n-150mbps"){
+  if (phy_type == "802.11n"){
     // Edited src/wifi/model/yans-wifi-phy.ccsrc/wifi/model/wifi-phy.cc
     // Edited src/wifi/model/yans-wifi-phy.cc
     // To make OfdmRate150MbpsBW40MHz available.
@@ -72,6 +72,7 @@ int main(int argc, char *argv[]){
     // and HTSupported attributes set to True.
     //
     phy.Set ("ChannelBonding", ns3::BooleanValue(true));
+    phy.Set ("ChannelWidth", ns3::UintegerValue(40));
     phy.Set ("ShortGuardEnabled", ns3::BooleanValue(true)); //Increase Throughput by reducing Word Guard time
     phy.Set ("GreenfieldEnabled", ns3::BooleanValue(true)); //Enable HT
     // phy_alt.Set ("ChannelBonding", ns3::BooleanValue(true));
@@ -82,13 +83,23 @@ int main(int argc, char *argv[]){
     // mac.SetBlockAckThresholdForAc (ns3::AC_BE, 10);
     // mac.SetBlockAckInactivityTimeoutForAc (ns3::AC_BE, 5);
     // 135mbps also works.
-    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_5GHZ);
+    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_2_4GHZ);
     wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
-                                  "DataMode", ns3::StringValue("OfdmRate150MbpsBW40MHz"), 
-                                  "ControlMode", ns3::StringValue("OfdmRate150MbpsBW40MHz"));
+                                  "DataMode", ns3::StringValue("HtMcs7"), 
+                                  "ControlMode", ns3::StringValue("HtMcs0"));
     // wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
     //                               "DataMode", ns3::StringValue("OfdmRate65MbpsBW20MHz"), 
     //                               "ControlMode", ns3::StringValue("OfdmRate6_5MbpsBW20MHz"));
+  }else if(phy_type == "802.11ac"){
+    //ChannelWidth
+    //phy.SetStandard("ChannelWidth", ns3::UintegerValue(160));
+    phy.Set ("ShortGuardEnabled", ns3::BooleanValue(true)); //Increase Throughput by reducing Word Guard time
+    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211ac);
+    wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
+                                  "DataMode", ns3::StringValue("VhtMcs9"), 
+                                  "ControlMode", ns3::StringValue("VhtMcs0"));
+    // !!! Isto tem de ficar noutro sitio
+    ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(160)); //Isto deve ser chamado no final
   }else if(phy_type == "802.11g-54mbps"){
     // Working - src/wifi/model/wifi-phy.cc para mais modelos.
     // Good source - https://www.nsnam.org/docs/models/html/wifi.html
@@ -161,7 +172,6 @@ int main(int argc, char *argv[]){
   positionAlloc->Add (ns3::Vector (1.0, 0.0, 0.0));
   positionAlloc->Add (ns3::Vector (2.0, 0.0, 0.0));
   mobility.SetPositionAllocator (positionAlloc);
-
 
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (remoteNodes);
