@@ -34,6 +34,9 @@ tuple<Ipv4Address,uint16_t> VirtualDiscovery::discover(void)
 
 vector<tuple<Ipv4Address,uint16_t>> VirtualDiscovery::getAll(void)
 {
+  random_device rd;
+  mt19937 g(rd());
+  shuffle(m_ips.begin(), m_ips.end(), g);
   return m_ips;
 }
 

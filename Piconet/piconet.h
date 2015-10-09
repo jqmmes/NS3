@@ -27,7 +27,7 @@ bool early_start = false; // Start all nodes in the first 1/10 of time.
 
 uint32_t random_seed = 1893;
 
-uint32_t node_number = 10; // Node number to use in the simulation
+uint32_t node_number = 1; // Node number to use in the simulation
 uint32_t simulation_time = 100; // Time to simulate (in seconds)
 uint32_t server_fixed_file_increase = 5; // Fixed increase of the number of files in the server
 uint32_t server_initial_file_count = 10; // Initial file count in the server
@@ -83,6 +83,18 @@ string application = "ring";
  **/
 template <typename T>
 void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, VirtualDiscovery *discovery){
+  NS_ASSERT(node_number > 0);
+  Ptr<T> node;
+  for (int x = 0; x < node_number; x++){
+    node = CreateObject<T> ();
+    node->Setup(discovery, randomGen);
+    nodes.Get (x)->AddApplication (node);
+    uint32_t start = 1000*(randomGen->GetValue(0.1,80.0));
+    node->SetStartTime (MilliSeconds (start));
+    node->SetStopTime (MilliSeconds (90000));
+  }
+  Simulator::Stop(MilliSeconds(90000));
+  Simulator::Run();
   // NS_ASSERT(simulation_time > 10);
   // simulation_time = (uint32_t)max((uint32_t)round(simulation_time/node_number), simulation_time);
 

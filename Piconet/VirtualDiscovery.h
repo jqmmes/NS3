@@ -8,6 +8,10 @@
 #include "ns3/internet-module.h"
 #include <mutex>
 #include <climits>
+#include <random>
+#include <algorithm>
+#include <iterator>
+#include <iostream>
 
 using namespace ns3;
 using namespace std;
@@ -24,7 +28,7 @@ public:
   tuple<Ipv4Address,uint16_t> discover(void);
   
   vector<tuple<Ipv4Address,uint16_t>> getAll(void);
-
+  int Random(int i);
 
 	uint32_t GetN(void);
 

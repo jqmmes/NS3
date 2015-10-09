@@ -30,7 +30,6 @@ main (int argc, char *argv[])
   string phyMode ("DsssRate1Mbps");
 	double rss = -80;  // -dBm
   string filename = "";
-  uint32_t node_number = 1;
   double prob = 0.5;
   double timeout = 10.0;
 
@@ -113,16 +112,7 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer i = ipv4.Assign (devices);
   
   VirtualDiscovery discovery(randomGen);
-  // if (application == "ring") StartSimulation<SimpleRing>(nodes, randomGen, &discovery);
-  // else if(application == "star") StartSimulation<SimpleStar>(nodes, randomGen, &discovery);
-  // else if (application == "purep2p") StartSimulation<PureP2P>(nodes, randomGen, &discovery);
-  // else if (application == "wellformed") StartSimulation<WellFormed>(nodes, randomGen, &discovery);
-  // else cerr << "No valid application defined." << endl;
-
-  // if (trace_file.is_open()){
-  //   trace_file.close();
-  // }
-
+  StartSimulation<p2p>(nodes, randomGen, &discovery);
   printf("ALL_DONE\n");
 
   return EXIT_SUCCESS;
