@@ -1,9 +1,11 @@
-//#include "MyServer.h"
+/**
+ *  TODO:
+ *  
+ *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
+ */
+
 #include "VirtualDiscovery.h"
 #include "p2p.h"
-//#include "SimpleStar.h"
-//#include "PureP2P.h"
-//#include "WellFormed.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/point-to-point-layout-module.h"
 #include <regex>
@@ -11,7 +13,6 @@
 #include <iterator>
 #include <fstream>
 #include <climits>
-///usr/local/include/
 #include <boost/algorithm/string.hpp>
 #include "piconet.h"
 
@@ -57,11 +58,6 @@ main (int argc, char *argv[])
   NodeContainer nodes;
   nodes.Create(node_number);
 
-  //PointToPointHelper BT;
-  //BT.SetDeviceAttribute("DataRate", StringValue("2Mbps"));
-  //BT.SetChannelAttribute("Delay", StringValue("100ms"));
-
-
   WifiHelper wifi;
   //wifi.SetStandard(WIFI_PHY_STANDARD_80211n_2_4GHZ);
   wifi.SetStandard(WIFI_PHY_STANDARD_80211g);
@@ -95,6 +91,7 @@ main (int argc, char *argv[])
   z->SetAttribute("Min", DoubleValue(1.0));
   z->SetAttribute("Max", DoubleValue(1.0));
 
+  //! Using a random position alocator
   Ptr<RandomBoxPositionAllocator> positionAlloc = CreateObject<RandomBoxPositionAllocator> ();
   positionAlloc->SetX(x);
   positionAlloc->SetY(y);

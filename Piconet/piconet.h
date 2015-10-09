@@ -93,7 +93,7 @@ void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, 
     node->SetStartTime (MilliSeconds (start));
     node->SetStopTime (MilliSeconds (90000));
   }
-  Simulator::Stop(MilliSeconds(90000));
+  Simulator::Stop(MilliSeconds(900000));
   Simulator::Run();
   // NS_ASSERT(simulation_time > 10);
   // simulation_time = (uint32_t)max((uint32_t)round(simulation_time/node_number), simulation_time);
