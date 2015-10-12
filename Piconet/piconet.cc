@@ -2,6 +2,8 @@
  *  TODO:
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
+ *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.
+ *  - Colocar a funcionar o min_peers
  */
 
 #include "VirtualDiscovery.h"
@@ -18,13 +20,13 @@
 
 NS_LOG_COMPONENT_DEFINE ("PiconetSimulator");
 
+
 using namespace ns3;
 using namespace std;
 
 int 
 main (int argc, char *argv[])
 {
-
   // start
   srand(time(NULL));
 
@@ -40,7 +42,7 @@ main (int argc, char *argv[])
   cmd.AddValue("Timeout", "CM/Discovery Timeout (10.0s default)", timeout);
   cmd.AddValue ("Seed", "Set Random Seed", random_seed);
   cmd.Parse (argc, argv);
-
+  LogComponentEnable("p2pApplication", LOG_LEVEL_DEBUG);
   NS_ASSERT(prob >= 0.0 && prob <= 1.0);
   
   RngSeedManager::SetSeed(random_seed);

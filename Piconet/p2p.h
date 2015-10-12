@@ -53,7 +53,7 @@ private:
   void ReadPacket(Ptr<Socket> socket, Address from);
   bool isPeerFull(Ptr<Node> node);
   Ptr<Node> getNode(Ipv4Address ip);
-
+  
   // Formation
   void Formation(uint32_t i, uint32_t limit);
   void setDiscoverable(bool status = true);

@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <ns3/node-list.h>
 
-NS_LOG_COMPONENT_DEFINE ("p2p");
+NS_LOG_COMPONENT_DEFINE ("p2pApplication");
 
 using namespace ns3;
 using namespace std;
@@ -11,13 +11,13 @@ TypeId
 p2p::GetTypeId (void)
 {
 	static TypeId tid = TypeId ("ns3::p2p")
-    	.SetParent<Application> ()
-    	.SetGroupName("Applications")
-    	.AddConstructor<p2p> ()
-	    .AddAttribute ("PeerFull", "If the connections are full.",
-                   BooleanValue (false),
-                   MakeBooleanAccessor (&p2p::m_peer_full),
-                   MakeBooleanChecker ())
+			.SetParent<Application> ()
+			.SetGroupName("Applications")
+			.AddConstructor<p2p> ()
+			.AddAttribute ("PeerFull", "If the connections are full.", // Um bocado hackish, mas funciona.
+										BooleanValue (false),
+										MakeBooleanAccessor (&p2p::m_peer_full),
+										MakeBooleanChecker ())
 	;
 	return tid;
 }
@@ -38,16 +38,7 @@ void p2p::StartApplication(void)
 
 	Ptr<NetDevice> net = m_node->GetDevice(0);
 	Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4>();
-	//BooleanValue c;
-	//m_node->GetApplication(0)->GetAttribute("Full", c);
-	//cout << c << endl;
-
-	//m_node->GetApplication(0)->GetAttribute("Full", c);
-	//cout << c << endl;
 	m_address = ipv4->GetAddress(1,0).GetLocal();
-	// if (m_address == Ipv4Address("0.0.0.1")){
-	// 	m_node->GetApplication(0)->SetAttribute("PeerFull", BooleanValue(true));
-	// }
 
 	NS_ASSERT(m_discovery);
 	NS_LOG_DEBUG("Start: " << m_address);
@@ -73,27 +64,25 @@ void p2p::Formation(uint32_t i, uint32_t limit){
 	uint32_t min_peers = 1;
 	if (distance(devices.begin(), devices.end()) > 0){
 		// FOR device : devices
-		for (vector<tuple<Ipv4Address, uint16_t>>::iterator iterator = devices.begin();
-															iterator != devices.end(); 
-															++iterator){
+		vector<tuple<Ipv4Address, uint16_t>>::iterator iterator;
+		for (iterator = devices.begin(); iterator != devices.end(); ++iterator){
 			if (!isPeerFull(getNode(get<0>(*iterator)))){
 				Send("FORMATION\nJOIN\nEND\n", get<0>(*iterator), 20);
 				//if (!(distance(m_connections.begin(), m_connections.end()) < min_peers))
-				//break;
-				return;
+				return; //break;
 			}
 		}
-	} //else {
-		if (i < limit*10){
-			Simulator::Schedule(MilliSeconds(100), &p2p::Formation, this, ++i, limit);
-		}else{
-			setDiscoverable(true);
-			if (distance(m_connections.begin(), m_connections.end()) == 0){
-				uint32_t timeout = 20000; //wait(timeout)
-				Simulator::Schedule (MilliSeconds(timeout), &p2p::Formation, this, 0, randomGen->GetInteger(5,12)); // goto start
-			}
+	}
+	if (i < limit*10){
+		Simulator::Schedule(MilliSeconds(100), &p2p::Formation, this, ++i, limit);
+	}else{
+		setDiscoverable(true);
+		if (distance(m_connections.begin(), m_connections.end()) == 0){
+			uint32_t timeout = 20000; //wait(timeout)
+			Simulator::Schedule (MilliSeconds(timeout), &p2p::Formation, this, 0, 
+													 randomGen->GetInteger(5,12)); // goto start
 		}
-	//}
+	}
 }
 
 Ptr<Socket> p2p::StartSocket(void){
@@ -102,9 +91,11 @@ Ptr<Socket> p2p::StartSocket(void){
 	socket = Socket::CreateSocket (m_node, TcpSocketFactory::GetTypeId ());
 	socket->Bind(local);
 	socket->Listen();
-	socket->SetAcceptCallback (MakeCallback (&p2p::ConnectionRequest, this),MakeCallback(&p2p::AcceptConnection, this));
+	socket->SetAcceptCallback (MakeCallback (&p2p::ConnectionRequest, this),
+														 MakeCallback(&p2p::AcceptConnection, this));
 	socket->SetRecvCallback (MakeCallback (&p2p::ReceivePacket, this));
-	socket->SetCloseCallbacks(MakeCallback (&p2p::NormalClose, this), MakeCallback (&p2p::ErrorClose, this));
+	socket->SetCloseCallbacks(MakeCallback (&p2p::NormalClose, this), 
+														MakeCallback (&p2p::ErrorClose, this));
 	socket->SetAllowBroadcast (true);
 	NS_LOG_DEBUG(m_address << " StartSocket (" << socket << ")");
 	m_map[socket] = malloc(0);
@@ -121,7 +112,8 @@ void p2p::ErrorClose(Ptr<Socket> socket){
 }
 
 bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from){
-	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << InetSocketAddress::ConvertFrom (from).GetIpv4());
+	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << 
+							 InetSocketAddress::ConvertFrom (from).GetIpv4());
 	return true;
 }
 
@@ -166,7 +158,8 @@ void p2p::ReadPacket(Ptr<Socket> socket, Address from){
 			if (param == "JOIN"){
 				 if (distance(m_connections.begin(), m_connections.end()) < MAX_CONNECTIONS){
 				 	Send("FORMATION\nACCEPT\nEND\n", InetSocketAddress::ConvertFrom (from).GetIpv4 (), 20);
-				 	m_connections.emplace(m_connections.end(), InetSocketAddress::ConvertFrom (from).GetIpv4 ());
+				 	m_connections.emplace(m_connections.end(), 
+				 												InetSocketAddress::ConvertFrom (from).GetIpv4 ());
 				 	//cout << m_address << "  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
 				 	if (distance(m_connections.begin(), m_connections.end()) >= MAX_CONNECTIONS)
 				 		m_node->GetApplication(0)->SetAttribute("PeerFull", BooleanValue(true));
@@ -176,7 +169,8 @@ void p2p::ReadPacket(Ptr<Socket> socket, Address from){
 				 }
 			}
 			else if (param == "ACCEPT"){
-				m_connections.emplace(m_connections.end(), InetSocketAddress::ConvertFrom (from).GetIpv4 ());
+				m_connections.emplace(m_connections.end(), 
+															InetSocketAddress::ConvertFrom (from).GetIpv4 ());
 				m_discovery->add(m_address, 20);
 				cout << m_address << "  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
 				setDiscoverable(true);
@@ -206,7 +200,8 @@ void p2p::ReceivePacket (Ptr<Socket> socket)
 	Address from; /*!< Origin address of the packet*/
 	void *local;
 
-	while(socket->GetRxAvailable () > 0){
+	while(socket->GetRxAvailable () > 0)
+	{
 		p = socket->RecvFrom (from);//socket->Recv (socket->GetRxAvailable (), 0);
 		m_map[socket] = realloc(m_map[socket], m_map_last_pos[socket]+(sizeof(uint8_t)*p->GetSize()));
 		p->CopyData (reinterpret_cast<uint8_t *> (m_map[socket])+m_map_last_pos[socket], p->GetSize()); 
@@ -216,12 +211,18 @@ void p2p::ReceivePacket (Ptr<Socket> socket)
 
 		// If the message as been fully received, lets process the request.
 		// To check if it's complete lets check if:
-		if (string(reinterpret_cast<char *>(local)).length() >= 4){
-			if (string(reinterpret_cast<char *>(local)).rfind("END\n") == string(reinterpret_cast<char *>(local)).length()-4){
+		if (string(reinterpret_cast<char *>(local)).length() >= 4)
+		{
+			if (string(reinterpret_cast<char *>(local)).rfind("END\n") == 
+					string(reinterpret_cast<char *>(local)).length()-4)
+			{
 				ReadPacket(socket, from);
 			}
-		}else{
-			if (string((char*)m_map[socket]).rfind("END\n") == string((char*)m_map[socket]).length()-4){
+		}
+		else
+		{
+			if (string((char*)m_map[socket]).rfind("END\n") == string((char*)m_map[socket]).length()-4)
+			{
 				ReadPacket(socket, from);
 			}
 		}
@@ -232,9 +233,12 @@ void p2p::ReceivePacket (Ptr<Socket> socket)
 void p2p::Send(const uint8_t * data, uint32_t size, Ipv4Address d_address, uint16_t port)
 {
 	Ptr<Socket> socket = StartSocket();
-	if (port){
+	if (port)
+	{
 		socket->Connect (InetSocketAddress (d_address, port));
-	}else{
+	}
+	else
+	{
 		socket->Connect (InetSocketAddress (d_address));
 	}
 	SendPacket(socket, data, size);
@@ -243,9 +247,12 @@ void p2p::Send(const uint8_t * data, uint32_t size, Ipv4Address d_address, uint1
 void p2p::Send(string sdata, Ipv4Address d_address, uint16_t port)
 {
 	Ptr<Socket> socket = StartSocket();
-	if (port){
+	if (port)
+	{
 		socket->Connect (InetSocketAddress (d_address, port));
-	}else{
+	}
+	else
+	{
 		socket->Connect (InetSocketAddress (d_address));
 	}
 	SendPacket(socket, reinterpret_cast<const uint8_t *>(sdata.c_str()), sdata.size()+1);
@@ -254,9 +261,12 @@ void p2p::Send(string sdata, Ipv4Address d_address, uint16_t port)
 void p2p::Send(stringstream& sdata, Ipv4Address d_address, uint16_t port)
 {
 	Ptr<Socket> socket = StartSocket();
-	if (port){
+	if (port)
+	{
 		socket->Connect (InetSocketAddress (d_address, port));
-	}else{
+	}
+	else
+	{
 		socket->Connect (InetSocketAddress (d_address));
 	}	
 	SendPacket(socket, reinterpret_cast<const uint8_t *>(sdata.str().c_str()), sdata.str().size()+1);
