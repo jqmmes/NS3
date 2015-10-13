@@ -89,7 +89,7 @@ void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, 
     node = CreateObject<T> ();
     node->Setup(discovery, randomGen);
     nodes.Get (x)->AddApplication (node);
-    uint32_t start = 1000*(randomGen->GetValue(0.1,80.0));
+    uint32_t start = 1000*(randomGen->GetValue(0.1,1.0));
     node->SetStartTime (MilliSeconds (start));
     node->SetStopTime (MilliSeconds (90000));
   }

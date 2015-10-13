@@ -59,6 +59,8 @@ void p2p::StartApplication(void)
 void p2p::Formation(uint32_t i, uint32_t limit){
 	if (m_connected)
 		return;
+	if (i == 0)
+		cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tSTART_DISCOVERY\t" << limit << endl;
 	setDiscoverable(false);
 	vector<tuple<Ipv4Address,uint16_t>> devices = m_discovery->getAll(); // devices = discovery()
 	uint32_t min_peers = 1;
@@ -68,6 +70,7 @@ void p2p::Formation(uint32_t i, uint32_t limit){
 		for (iterator = devices.begin(); iterator != devices.end(); ++iterator){
 			if (!isPeerFull(getNode(get<0>(*iterator)))){
 				Send("FORMATION\nJOIN\nEND\n", get<0>(*iterator), 20);
+				cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tFOUND_DEVICE\t" << get<0>(*iterator) << "  \t" << i << "*100ms" << endl;
 				//if (!(distance(m_connections.begin(), m_connections.end()) < min_peers))
 				return; //break;
 			}
@@ -78,6 +81,7 @@ void p2p::Formation(uint32_t i, uint32_t limit){
 	}else{
 		setDiscoverable(true);
 		if (distance(m_connections.begin(), m_connections.end()) == 0){
+			cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tTIMEOUT_DISCOVERY" << endl;
 			uint32_t timeout = 20000; //wait(timeout)
 			Simulator::Schedule (MilliSeconds(timeout), &p2p::Formation, this, 0, 
 													 randomGen->GetInteger(5,12)); // goto start
@@ -172,13 +176,14 @@ void p2p::ReadPacket(Ptr<Socket> socket, Address from){
 				m_connections.emplace(m_connections.end(), 
 															InetSocketAddress::ConvertFrom (from).GetIpv4 ());
 				m_discovery->add(m_address, 20);
-				cout << m_address << "  \t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
+				cout << Simulator::Now().GetSeconds() << "  \t" << m_address << "  \tNEW_MASTER\t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
 				setDiscoverable(true);
 				m_connected = true;
 				if (distance(m_connections.begin(), m_connections.end()) >= MAX_CONNECTIONS)
 			 		m_node->GetApplication(0)->SetAttribute("PeerFull", BooleanValue(true));
 			}
 			else if (param == "REJECT"){
+				cout << Simulator::Now().GetSeconds() << "  \t" << m_address << "  \tREJECTED_MASTER\t" <<  InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
 				Simulator::Schedule(MilliSeconds(0), &p2p::Formation, this, 0, randomGen->GetInteger(5,12));
 			}
 		}else{
