@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
   ns3::RngSeedManager::SetSeed(seed);
 
   if (!wifiDirect){
-    pointToPoint.SetDeviceAttribute ("DataRate", ns3::StringValue ("1000Mbps"));
+    pointToPoint.SetDeviceAttribute ("DataRate", ns3::StringValue ("1000Mbps")); // 1Gbps
     pointToPoint.SetChannelAttribute ("Delay", ns3::StringValue ("1ns"));
 
   	p2pNodes.Create (2);
@@ -71,10 +71,10 @@ int main(int argc, char *argv[]){
     // This class can create MACs of type ns3::ApWifiMac, ns3::StaWifiMac, and, ns3::AdhocWifiMac, with QosSupported 
     // and HTSupported attributes set to True.
     //
-    phy.Set ("ChannelBonding", ns3::BooleanValue(true));
-    phy.Set ("ChannelWidth", ns3::UintegerValue(40));
-    phy.Set ("ShortGuardEnabled", ns3::BooleanValue(true)); //Increase Throughput by reducing Word Guard time
-    phy.Set ("GreenfieldEnabled", ns3::BooleanValue(true)); //Enable HT
+    //phy.Set ("ChannelBonding", ns3::BooleanValue(true));
+    //phy.Set ("ChannelWidth", ns3::UintegerValue(40));
+    //phy.Set ("ShortGuardEnabled", ns3::BooleanValue(true)); //Increase Throughput by reducing Word Guard time
+    //phy.Set ("GreenfieldEnabled", ns3::BooleanValue(true)); //Enable HT
     // phy_alt.Set ("ChannelBonding", ns3::BooleanValue(true));
     // phy_alt.Set ("ShortGuardEnabled", ns3::BooleanValue(true)); //Increase Throughput by reducing Word Guard time
     // phy_alt.Set ("GreenfieldEnabled", ns3::BooleanValue(true)); //Enable HT
@@ -83,9 +83,9 @@ int main(int argc, char *argv[]){
     // mac.SetBlockAckThresholdForAc (ns3::AC_BE, 10);
     // mac.SetBlockAckInactivityTimeoutForAc (ns3::AC_BE, 5);
     // 135mbps also works.
-    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_2_4GHZ);
+    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_5GHZ);
     wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
-                                  "DataMode", ns3::StringValue("HtMcs7"), 
+                                  "DataMode", ns3::StringValue("HtMcs7"),
                                   "ControlMode", ns3::StringValue("HtMcs0"));
     // wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
     //                               "DataMode", ns3::StringValue("OfdmRate65MbpsBW20MHz"), 
@@ -202,6 +202,11 @@ int main(int argc, char *argv[]){
   //stack.Install (wifiApNode_alt);
   stack.Install (remoteNodes);
   //stack.Install (remoteNodes_alt);
+  
+
+  ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(40));
+  ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ShortGuardEnabled", ns3::BooleanValue(true));
+  
 
   // olsr.AssignStreams (p2pNodes, 0);
   // olsr.AssignStreams (remoteNodes, 1);
