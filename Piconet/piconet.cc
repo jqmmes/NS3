@@ -3,6 +3,7 @@
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
  *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.
+ *  - Usar as socket connections para controlar as ligações. Incluindo as refusals. Manter a socket connection aberta.
  */
 
 #include "VirtualDiscovery.h"
