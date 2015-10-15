@@ -82,12 +82,13 @@ string application = "ring";
  * Start the simulation for application T.
  **/
 template <typename T>
-void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, VirtualDiscovery *discovery){
+void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, uint32_t minPeers, uint32_t minDiscoveryTimeout, uint32_t maxDiscoveryTimeout, 
+        uint32_t minIdleTimeout, uint32_t maxIdleTimeout, uint32_t discoveryTimer, VirtualDiscovery *discovery){
   NS_ASSERT(node_number > 0);
   Ptr<T> node;
   for (int x = 0; x < node_number; x++){
     node = CreateObject<T> ();
-    node->Setup(discovery, randomGen);
+    node->Setup(discovery, minPeers, minDiscoveryTimeout, maxDiscoveryTimeout, minIdleTimeout, maxIdleTimeout, discoveryTimer, randomGen);
     nodes.Get (x)->AddApplication (node);
     uint32_t start = 1000*(randomGen->GetValue(0.1,1.0));
     node->SetStartTime (MilliSeconds (start));

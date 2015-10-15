@@ -3,7 +3,6 @@
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
  *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.
- *  - Colocar a funcionar o min_peers
  */
 
 #include "VirtualDiscovery.h"
@@ -35,11 +34,22 @@ main (int argc, char *argv[])
   string filename = "";
   double prob = 0.5;
   double timeout = 10.0;
+  uint32_t min_peers = 1;
+  uint32_t min_discovery_timeout = 5;
+  uint32_t max_discovery_timeout = 12;
+  uint32_t min_idle_timeout = 20;
+  uint32_t max_idle_timeout = 20;
+  uint32_t discovery_timer = 100;
 
   CommandLine cmd;
-  cmd.AddValue("N", "Number of Nodes (1 default)", node_number);
+  cmd.AddValue("Nodes", "Number of Nodes (1 default)", node_number);
   cmd.AddValue("P", "Probability of CS [0.0-1.0] (0.5 default)", prob);
-  cmd.AddValue("Timeout", "CM/Discovery Timeout (10.0s default)", timeout);
+  cmd.AddValue("MinPeers", "Mininum number of peers.", min_peers);
+  cmd.AddValue("DiscoveryTimer", "Time between discovery lookups (in ms)", discovery_timer);
+  cmd.AddValue("MinDiscoveryTimeout", "Minimum discovery timeout (in s)", min_discovery_timeout);
+  cmd.AddValue("MaxDiscoveryTimeout", "Maximum discovery timeout (in s)", max_discovery_timeout);
+  cmd.AddValue("MinIdleTimeout", "Minimum discovery idle timeout (in s)", min_idle_timeout);
+  cmd.AddValue("MaxIdleTimeout", "Maximum discovery idle timeout (in s)", max_idle_timeout);
   cmd.AddValue ("Seed", "Set Random Seed", random_seed);
   cmd.Parse (argc, argv);
   LogComponentEnable("p2pApplication", LOG_LEVEL_DEBUG);
@@ -111,7 +121,7 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer i = ipv4.Assign (devices);
   
   VirtualDiscovery discovery(randomGen);
-  StartSimulation<p2p>(nodes, randomGen, &discovery);
+  StartSimulation<p2p>(nodes, randomGen, min_peers, min_discovery_timeout, max_discovery_timeout, min_idle_timeout, max_idle_timeout, discovery_timer, &discovery);
   printf("ALL_DONE\n");
 
   return EXIT_SUCCESS;

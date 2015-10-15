@@ -27,7 +27,7 @@ public:
 
   p2p();
   virtual ~p2p();
-  void Setup(VirtualDiscovery *discovery, Ptr<UniformRandomVariable> rand);
+  void Setup(VirtualDiscovery*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, Ptr<UniformRandomVariable>);
 
 private:
 
@@ -55,8 +55,8 @@ private:
   Ptr<Node> getNode(Ipv4Address ip);
   
   // Formation
-  void Formation(uint32_t i, uint32_t limit);
-  void setDiscoverable(bool status = true);
+  void Formation(uint32_t i, uint32_t limit); /*!< Formation algorithm for P2P */
+  void setDiscoverable(bool status = true); /*!< Set discoverable status true of false */
 
   // Variables
   VirtualDiscovery *    m_discovery = NULL; /*!< Virtual Discovery object shared with all nodes*/
@@ -68,9 +68,15 @@ private:
   map<Ptr<Socket>, uint32_t> m_map_last_pos; /*!< Last position for each socket connection */
   Ptr<UniformRandomVariable> randomGen; /*!< Random Generator */
   list<Ipv4Address> m_connections; /*!< List of all connections */
-  bool m_peer_full;
+  bool m_peer_full; /*!< TypeId Variable to check if node is full (reached max connections allowed) */
   uint32_t MAX_CONNECTIONS = 5; /*!< Maximum number of connections per node */
-  bool m_connected = false;
+  bool m_connected = false; /*!< If Node is connected to some other node */
+  uint32_t m_discovery_timer = 100; /*!< Interval between discovery lookups */
+  uint32_t m_min_peers = 1; /*!< Minimum number of Peers to connect */
+  uint32_t m_min_discovery_timeout = 5; /*!< Minimum timeout for discovery */
+  uint32_t m_max_discovery_timeout = 12; /*!< Maximum timeout for discovery */
+  uint32_t m_min_idle_timeout = 20; /*!< Minimum timeout for idle */
+  uint32_t m_max_idle_timeout = 20; /*!< Maximum timeout for idle */
 };
 
 #endif
