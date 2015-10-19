@@ -3,6 +3,7 @@
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
  *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.  [importante - Fica mais real. Ou não.]
+ *  - Usar as socket connections para controlar as ligações. Incluindo as refusals. Manter a socket connection aberta.
  */
 
 #include "VirtualDiscovery.h"
@@ -103,13 +104,12 @@ main (int argc, char *argv[])
   mobility.Install (nodes);
 
   InternetStackHelper internet;
-  //internet.SetTcp("ns3::TcpL4Protocol");
   internet.Install (nodes);
 
   Ipv4AddressHelper ipv4;
   ipv4.SetBase ("0.0.0.0", "255.255.255.0");
   Ipv4InterfaceContainer i = ipv4.Assign (devices);
-  
+
   VirtualDiscovery discovery(randomGen);
   StartSimulation<p2p>(nodes, randomGen, min_peers, min_discovery_timeout, max_discovery_timeout, min_idle_timeout, max_idle_timeout, discovery_timer, &discovery);
   printf("ALL_DONE\n");
