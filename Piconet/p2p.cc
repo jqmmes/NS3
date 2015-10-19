@@ -111,7 +111,8 @@ void p2p::Formation(uint32_t i, uint32_t limit)
 	}
 }
 
-Ptr<Socket> p2p::StartSocket(void){
+Ptr<Socket> p2p::StartSocket(void)
+{
 	Ptr<Socket> socket;
 	InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), 20);
 	socket = Socket::CreateSocket (m_node, TcpSocketFactory::GetTypeId ());
@@ -129,30 +130,36 @@ Ptr<Socket> p2p::StartSocket(void){
 	return socket;
 }
 
-void p2p::NormalClose(Ptr<Socket> socket){
+void p2p::NormalClose(Ptr<Socket> socket)
+{
 	NS_LOG_DEBUG(m_address << " NormalClose (" << socket << ")");
 }
 
-void p2p::ErrorClose(Ptr<Socket> socket){
+void p2p::ErrorClose(Ptr<Socket> socket)
+{
 	NS_LOG_DEBUG(m_address << " ErrorClose (" << socket << ")");
 }
 
-bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from){
+bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from)
+{
 	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << 
 							 InetSocketAddress::ConvertFrom (from).GetIpv4());
 	return true;
 }
 
-void p2p::AcceptConnection(Ptr<Socket> socket, const ns3::Address& from){
+void p2p::AcceptConnection(Ptr<Socket> socket, const ns3::Address& from)
+{
 	NS_LOG_DEBUG(m_address << " AcceptConnection (" << socket << ")");
 	socket->SetRecvCallback (MakeCallback (&p2p::ReceivePacket, this));
 }
 
-void p2p::ConnectSuccess(Ptr<Socket> socket){
+void p2p::ConnectSuccess(Ptr<Socket> socket)
+{	
 	NS_LOG_DEBUG(m_address << " ConnectSuccess (" << socket << ")");
 }
 
-void p2p::ConnectFail(Ptr<Socket> socket){
+void p2p::ConnectFail(Ptr<Socket> socket)
+{
 	NS_LOG_DEBUG(m_address << " ConnectFail (" << socket << ")");
 }
 
@@ -175,7 +182,8 @@ void p2p::Setup(VirtualDiscovery *discovery, uint32_t minPeers, uint32_t minDisc
 	randomGen = rand;
 }
 
-void p2p::ReadPacket(Ptr<Socket> socket, Address from){
+void p2p::ReadPacket(Ptr<Socket> socket, Address from)
+{
 	stringstream answer; /*!< iostream of a possible answer */
 	stringstream request; /*!< iostream of a request */
 	string param; /*!< param requested in the packet. Extracted from request. */
@@ -337,7 +345,7 @@ void p2p::SendPacket(Ptr<Socket> socket, const uint8_t* data, uint32_t size, uin
 		}
 		else
 		{
-			NS_LOG_DEBUG("Send Fail (" << socket->GetErrno () << ")");
+			NS_LOG_DEBUG("Send Fail " << socket->GetErrno () );
 			err = true;
 			break;
 		}

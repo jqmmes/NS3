@@ -2,7 +2,7 @@
  *  TODO:
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
- *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.
+ *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.  [importante - Fica mais real. Ou não.]
  */
 
 #include "VirtualDiscovery.h"
@@ -30,16 +30,7 @@ main (int argc, char *argv[])
   srand(time(NULL));
 
   string phyMode ("DsssRate1Mbps");
-	double rss = -80;  // -dBm
-  string filename = "";
-  double prob = 0.5;
-  double timeout = 10.0;
-  uint32_t min_peers = 1;
-  uint32_t min_discovery_timeout = 5;
-  uint32_t max_discovery_timeout = 12;
-  uint32_t min_idle_timeout = 20;
-  uint32_t max_idle_timeout = 20;
-  uint32_t discovery_timer = 100;
+
 
   CommandLine cmd;
   cmd.AddValue("Nodes", "Number of Nodes (1 default)", node_number);
@@ -50,6 +41,9 @@ main (int argc, char *argv[])
   cmd.AddValue("MaxDiscoveryTimeout", "Maximum discovery timeout (in s)", max_discovery_timeout);
   cmd.AddValue("MinIdleTimeout", "Minimum discovery idle timeout (in s)", min_idle_timeout);
   cmd.AddValue("MaxIdleTimeout", "Maximum discovery idle timeout (in s)", max_idle_timeout);
+  cmd.AddValue("SimDuration", "Simulation time (in s)", simulation_time);
+  cmd.AddValue("FirstJoinTime", "Last join time (in s)", first_join_time);
+  cmd.AddValue("LastJoinTime", "Last join time (in s)", last_join_time);
   cmd.AddValue ("Seed", "Set Random Seed", random_seed);
   cmd.Parse (argc, argv);
   LogComponentEnable("p2pApplication", LOG_LEVEL_DEBUG);
@@ -75,16 +69,12 @@ main (int argc, char *argv[])
   wifi.SetStandard(WIFI_PHY_STANDARD_80211g);
 
   YansWifiPhyHelper wifiPhy =  YansWifiPhyHelper::Default ();
-  //wifiPhy.Set ("RxGain", DoubleValue (0) ); 
-  //wifiPhy.SetPcapDataLinkType (YansWifiPhyHelper::DLT_IEEE802_11_RADIO); 
 
   YansWifiChannelHelper wifiChannel;
   wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
-  //wifiChannel.AddPropagationLoss ("ns3::FixedRssLossModel","Rss",DoubleValue (rss));
   wifiChannel.AddPropagationLoss ("ns3::RangePropagationLossModel");
   wifiPhy.SetChannel (wifiChannel.Create ());
 
-  //NqosWifiMacHelper wifiMac = NqosWifiMacHelper::Default ();
   QosWifiMacHelper wifiMac = QosWifiMacHelper::Default ();
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
                                 "DataMode",StringValue (phyMode),

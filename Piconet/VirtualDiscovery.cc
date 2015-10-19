@@ -27,7 +27,6 @@ tuple<Ipv4Address,uint16_t> VirtualDiscovery::discover(void)
   {
     return make_tuple(Ipv4Address("0.0.0.0"), 0);
   }
-  //int i = rand() % distance(begin(m_ips), end(m_ips));
   uint32_t i = randomGen->GetInteger(1,INT_MAX) % distance(begin(m_ips), end(m_ips));
   return m_ips.at(i);
 }
@@ -40,7 +39,8 @@ vector<tuple<Ipv4Address,uint16_t>> VirtualDiscovery::getAll(void)
   return m_ips;
 }
 
-uint32_t VirtualDiscovery::GetN(void){
+uint32_t VirtualDiscovery::GetN(void)
+{
   return (uint32_t)m_ips.size();
 }
 
