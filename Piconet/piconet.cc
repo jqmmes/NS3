@@ -3,7 +3,7 @@
  *  
  *  - Em vez de encontrar ips no VirtualDiscovery, permitir encontrar diretamente Node.
  *  - Em vez de enviar mensagens por socket, posso usar um ScheduleWithContext noutro nó para fazer ligação.  [importante - Fica mais real. Ou não.]
- *  - Usar as socket connections para controlar as ligações. Incluindo as refusals. Manter a socket connection aberta.
+ *  - Usar as socket connections para controlar as ligações. Incluindo as refusals. Manter a socket connection aberta. [importante - Fica mais real.]
  */
 
 #include "VirtualDiscovery.h"
@@ -17,6 +17,7 @@
 #include <climits>
 #include <boost/algorithm/string.hpp>
 #include "piconet.h"
+#include <cmath>
 
 NS_LOG_COMPONENT_DEFINE ("PiconetSimulator");
 
@@ -24,12 +25,61 @@ NS_LOG_COMPONENT_DEFINE ("PiconetSimulator");
 using namespace ns3;
 using namespace std;
 
+// Gerar uma grid de dispositivos
+vector<tuple<double, double>> MakeGrid(uint32_t nnodes, uint32_t perchoice = 4, double xspace = 0.2, double yspace = 0.2, bool rowfirst = true)
+{
+  uint32_t nrows, ncols;
+  double xmin, ymin;
+  vector<tuple<double, double>> ret;
+  if (rowfirst)
+  {
+    nrows = perchoice;
+    ncols = (uint32_t)ceil((double)nnodes / (double)perchoice);
+  }
+  else
+  {
+    nrows = (uint32_t)ceil((double)nnodes / (double)perchoice);
+    ncols = perchoice;
+  }
+  if (nrows % 2 == 0)
+  {
+    xmin = -1 * (((nrows / 2) * xspace) - (xspace / 2));
+  }
+  else
+  {
+    xmin = -1 * (((nrows - 1) / 2) * xspace);
+  }
+  if (ncols % 2 == 0)
+  {
+    ymin = -1 * (((ncols / 2) * yspace) - (yspace / 2));
+  }
+  else
+  {
+    ymin = -1 * (((ncols - 1) / 2) * yspace);
+  }
+  cout << ncols << "\t" << nrows << endl;
+  for (uint32_t r = 0; r < nrows; ++r)
+  {
+    // if (r >= (nnodes % nrows))
+    // {
+    //   ncols = nnodes % ncols;
+    // }
+    for (uint32_t c = 0; c < ncols; ++c)
+    {
+      cout << "(" << (xmin + (r * xspace)) << ", " << (ymin + (c * yspace)) << ") ";
+      ret.emplace(end(ret), make_tuple((xmin + (r * xspace)), (ymin + (c * yspace))));
+    }
+    cout << endl;
+  }
+  return ret;
+}
+
+
 int 
 main (int argc, char *argv[])
 {
   // start
   srand(time(NULL));
-
   string phyMode ("DsssRate1Mbps");
 
 
