@@ -53,6 +53,7 @@ private:
   void ReadPacket(Ptr<Socket> socket, Address from);
   bool isPeerFull(Ptr<Node> node);
   Ptr<Node> getNode(Ipv4Address ip);
+  void Gossip(string msg, uint32_t msg_id = 0);
   
   // Formation
   void Formation(uint32_t i, uint32_t limit); /*!< Formation algorithm for P2P */
@@ -68,6 +69,7 @@ private:
   map<Ptr<Socket>, uint32_t> m_map_last_pos; /*!< Last position for each socket connection */
   Ptr<UniformRandomVariable> randomGen; /*!< Random Generator */
   list<Ipv4Address> m_connections; /*!< List of all connections */
+  map<uint32_t, vector<Ipv4Address>> m_gossip_msg_map;
   bool m_peer_full; /*!< TypeId Variable to check if node is full (reached max connections allowed) */
   uint32_t MAX_CONNECTIONS = 5; /*!< Maximum number of connections per node */
   bool m_connected = false; /*!< If Node is connected to some other node */
@@ -77,6 +79,8 @@ private:
   uint32_t m_max_discovery_timeout = 12; /*!< Maximum timeout for discovery */
   uint32_t m_min_idle_timeout = 20; /*!< Minimum timeout for idle */
   uint32_t m_max_idle_timeout = 20; /*!< Maximum timeout for idle */
+
+  uint32_t m_Binitial = 1; /*!< Gossip Algorithm Binitial */
 };
 
 #endif

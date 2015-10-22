@@ -1,6 +1,7 @@
 #include "p2p.h"
 #include <inttypes.h>
 #include <ns3/node-list.h>
+#include <cstdint>
 
 NS_LOG_COMPONENT_DEFINE ("p2pApplication");
 
@@ -54,7 +55,24 @@ void p2p::StartApplication(void)
 	Formation(0, randomGen->GetInteger(5,12));
 }
 
-
+//https://cseweb.ucsd.edu/~marzullo/pubs/harary.pdf
+void p2p::Gossip(string msg, uint32_t msg_id)
+{
+	if (msg_id == 0)
+	{
+		m_gossip_msg_map[randomGen->GetInteger(0, INT_MAX)] = vector<Ipv4Address> (); // Formar um novo baseado no mac depois.
+		uint32_t m_peers = distance(begin(m_connections), end(m_connections));
+		for (uint32_t i = 0; i < m_Binitial; ++i)
+		{
+			if (i > m_peers)
+			{
+				return;
+			}
+			// Escolher um a um aleatoriamente e adicionar à lista de peers que ja viram esta msg.
+			continue;
+		}
+	}
+}
 
 void p2p::Formation(uint32_t i, uint32_t limit)
 {
@@ -144,6 +162,7 @@ bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from)
 {
 	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << 
 							 InetSocketAddress::ConvertFrom (from).GetIpv4());
+	cout << Simulator::Now().GetSeconds() << "\t" << m_address << endl;
 	return true;
 }
 
