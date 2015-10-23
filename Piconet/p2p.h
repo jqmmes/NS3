@@ -53,8 +53,12 @@ private:
   void ReadPacket(Ptr<Socket> socket, Address from);
   bool isPeerFull(Ptr<Node> node);
   Ptr<Node> getNode(Ipv4Address ip);
-  void Gossip(string msg, uint32_t msg_id = 0);
+  void Gossip(string msg, uint32_t msg_id = -1); /*!< msg_id ranges from [0, MAX_INT], so -1 is new msg. */
   
+  // Gossip
+  vector<Ipv4Address> GetRandomPeers(vector<Ipv4Address> VirginPeers, uint32_t B);
+  vector<Ipv4Address> GetVirginPeers(uint32_t MsgId);
+
   // Formation
   void Formation(uint32_t i, uint32_t limit); /*!< Formation algorithm for P2P */
   void setDiscoverable(bool status = true); /*!< Set discoverable status true of false */
@@ -68,7 +72,7 @@ private:
   map<Ptr<Socket>, void *> m_map; /*!< Map of open socket connections */
   map<Ptr<Socket>, uint32_t> m_map_last_pos; /*!< Last position for each socket connection */
   Ptr<UniformRandomVariable> randomGen; /*!< Random Generator */
-  list<Ipv4Address> m_connections; /*!< List of all connections */
+  vector<Ipv4Address> m_connections; /*!< List of all connections */
   map<uint32_t, vector<Ipv4Address>> m_gossip_msg_map;
   bool m_peer_full; /*!< TypeId Variable to check if node is full (reached max connections allowed) */
   uint32_t MAX_CONNECTIONS = 5; /*!< Maximum number of connections per node */
@@ -80,8 +84,10 @@ private:
   uint32_t m_min_idle_timeout = 20; /*!< Minimum timeout for idle */
   uint32_t m_max_idle_timeout = 20; /*!< Maximum timeout for idle */
 
-  uint32_t m_Binitial = 1; /*!< Gossip Algorithm Binitial */
+  // Gossip Algorithm
+  uint32_t m_Binitial = 1; /*!< Binitial parameter for Gossip Algorithm */
   uint32_t m_F = 1; /*!< F parameter for Gossip Algorithm */
+  uint32_t m_B = 1; /*!< B parameter for Gossip Algorithm */
 };
 
 #endif

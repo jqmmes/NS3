@@ -58,18 +58,18 @@ void p2p::StartApplication(void)
 //https://cseweb.ucsd.edu/~marzullo/pubs/harary.pdf
 void p2p::Gossip(string msg, uint32_t msg_id)
 {
-	list<Ipv4Address> broadcast_peers;
-	if (msg_id == 0)
+	vector<Ipv4Address> broadcast_peers;
+	vector<Ipv4Address>::iterator peer;
+	if (msg_id == -1) // If is a new message we don't have a msg_id.
 	{
-		m_gossip_msg_map[randomGen->GetInteger(0, INT_MAX)] = vector<Ipv4Address> (); // Formar um novo baseado no mac depois.
-		
+		msg_id = randomGen->GetInteger(0, INT_MAX);
+		m_gossip_msg_map[msg_id] = vector<Ipv4Address> (); // Start a new message group.
+		stringstream msg_stream;
+		msg_stream << "GOSSIP\n" << msg_id << "\n" << msg; // Add msg_id to message and mark it as Gossip.
 		broadcast_peers = GetRandomPeers(m_connections, m_Binitial);
-
-		uint32_t m_peers = distance(begin(m_connections), end(m_connections));
-		for (uint32_t i = 0; i < m_Binitial && i < m_peers; ++i)
+		for (peer = begin(broadcast_peers); peer != end(broadcast_peers); ++peer)
 		{
-			// Escolher um a um aleatoriamente e adicionar à lista de peers que ja viram esta msg.
-			continue;
+			Send(msg_stream.str(), (*peer));
 		}
 	}
 	else
@@ -78,13 +78,44 @@ void p2p::Gossip(string msg, uint32_t msg_id)
 		if (distance(begin(m_gossip_msg_map[msg_id]), end(m_gossip_msg_map[msg_id])) < m_F)
 		{
 			broadcast_peers = GetRandomPeers(GetVirginPeers(msg_id), m_B);
-			list<Ipv4Address>::iterator peer;
 			for (peer = begin(broadcast_peers); peer != end(broadcast_peers); ++peer)
 			{
 				Send(msg, (*peer));
 			}
 		}
 	}
+}
+
+vector<Ipv4Address> p2p::GetVirginPeers(uint32_t MsgId)
+{
+	NS_ASSERT(m_gossip_msg_map[MsgId]);
+	vector<Ipv4Address> peers;
+	vector<Ipv4Address>::iterator peer;
+	for (peer = begin(m_gossip_msg_map[MsgId]); peer != end(m_gossip_msg_map[MsgId]); ++peer)
+	{
+		if (find(begin(m_connections), end(m_connections), (*peer)) == end(m_connections))
+		{
+			peers.emplace_back((*peer));
+		}
+	}
+	return peers;
+}
+
+vector<Ipv4Address> p2p::GetRandomPeers(vector<Ipv4Address> VirginPeers, uint32_t B)
+{
+
+	vector<Ipv4Address> peers, AuxVirginPeers;
+	uint32_t i;
+	copy(begin(VirginPeers), end(VirginPeers), back_inserter(AuxVirginPeers)); // We need to preserve original data.
+
+  	while(B > 0 && begin(AuxVirginPeers) != end(AuxVirginPeers)) // For B peers, or until max peers available.
+  	{
+  		i = randomGen->GetInteger(0, distance(begin(AuxVirginPeers), end(AuxVirginPeers))); // Choose a random element
+  		peers.emplace_back(AuxVirginPeers[i]); // Emplace element at the end of return vector
+  		AuxVirginPeers.erase(begin(AuxVirginPeers)+i); // Remove selected element from original list
+		--B; // Decrease B
+  	}
+	return peers;
 }
 
 void p2p::Formation(uint32_t i, uint32_t limit)
@@ -269,6 +300,11 @@ void p2p::ReadPacket(Ptr<Socket> socket, Address from)
 					Simulator::ScheduleNow(&p2p::Formation, this, 0, randomGen->GetInteger(5,12));
 				}
 			}
+		}
+		else if (param == "GOSSIP")
+		{
+			getline(request, param); // Parse MsgId.
+			Gossip(request.str(), atoi(param.c_str())); // Continue Gossip Algorithm.
 		}else{
 			keep = false;
 		}
