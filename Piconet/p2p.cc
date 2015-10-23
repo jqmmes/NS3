@@ -56,7 +56,7 @@ void p2p::StartApplication(void)
 
 	if (m_address == Ipv4Address("0.0.0.1"))
 	{
-		Simulator::Schedule(Seconds(20),  &p2p::Gossip, this, "END\n", -1);
+		Simulator::Schedule(Seconds(1000),  &p2p::Gossip, this, "END\n", -1);
 	}
 }
 

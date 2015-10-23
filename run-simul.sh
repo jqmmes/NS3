@@ -147,7 +147,7 @@ echo "Running simul with waf.. "
 cp -r Piconet ${path_to_waf}
 
 pushd ${path_to_waf}
-./waf --run="scratch/Piconet/Piconet --Seed=$RANDOM --Nodes=$nodes --GossipBinitial=$gossip_b_initial --GossipB=$gossip_b --GossipF=$gossip_f" > $out_file; 
+./waf --run="scratch/Piconet/Piconet --Seed=$RANDOM --Nodes=$nodes --MinPeers=$min_peers --DiscoveryTimer=$discovery_timer --MinDiscoveryTimeout=$min_discovery_timeout --MaxDiscoveryTimeout=$max_discovery_timeout --MinIdleTimeout=$min_idle_timeout --MaxIdleTimeout=$max_idle_timeout --SimDuration=$sim_duration --FirstJoinTime=$first_join_time --LastJoinTime=$last_join_time --GossipBinitial=$gossip_b_initial --GossipB=$gossip_b --GossipF=$gossip_f " > $out_file; 
 popd
 
 echo "Finished running simul."
