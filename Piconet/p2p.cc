@@ -53,6 +53,11 @@ void p2p::StartApplication(void)
 	}
 
 	Formation(0, randomGen->GetInteger(5,12));
+
+	if (m_address == Ipv4Address("0.0.0.1"))
+	{
+		Simulator::Schedule(Seconds(20),  &p2p::Gossip, this, "END\n", -1);
+	}
 }
 
 //https://cseweb.ucsd.edu/~marzullo/pubs/harary.pdf
@@ -69,17 +74,21 @@ void p2p::Gossip(string msg, uint32_t msg_id)
 		broadcast_peers = GetRandomPeers(m_connections, m_Binitial);
 		for (peer = begin(broadcast_peers); peer != end(broadcast_peers); ++peer)
 		{
+			m_gossip_msg_map[msg_id].emplace_back((*peer));
+			cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tSEND_GOSSIP\t" << (*peer) << endl;
 			Send(msg_stream.str(), (*peer));
 		}
 	}
 	else
 	{
 		NS_ASSERT(m_gossip_msg_map[msg_id]);
-		if (distance(begin(m_gossip_msg_map[msg_id]), end(m_gossip_msg_map[msg_id])) < m_F)
+		if (m_gossip_msg_n_rcv[msg_id] < m_F) // Number of times received this message < F
 		{
 			broadcast_peers = GetRandomPeers(GetVirginPeers(msg_id), m_B);
 			for (peer = begin(broadcast_peers); peer != end(broadcast_peers); ++peer)
 			{
+				m_gossip_msg_map[msg_id].emplace_back((*peer));
+				cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tSEND_GOSSIP\t" << (*peer) << endl;
 				Send(msg, (*peer));
 			}
 		}
@@ -91,9 +100,9 @@ vector<Ipv4Address> p2p::GetVirginPeers(uint32_t MsgId)
 	NS_ASSERT(m_gossip_msg_map[MsgId]);
 	vector<Ipv4Address> peers;
 	vector<Ipv4Address>::iterator peer;
-	for (peer = begin(m_gossip_msg_map[MsgId]); peer != end(m_gossip_msg_map[MsgId]); ++peer)
+	for (peer = begin(m_connections); peer != end(m_connections); ++peer)
 	{
-		if (find(begin(m_connections), end(m_connections), (*peer)) == end(m_connections))
+		if (find(begin(m_gossip_msg_map[MsgId]), end(m_gossip_msg_map[MsgId]), (*peer)) == end(m_gossip_msg_map[MsgId]))
 		{
 			peers.emplace_back((*peer));
 		}
@@ -110,7 +119,7 @@ vector<Ipv4Address> p2p::GetRandomPeers(vector<Ipv4Address> VirginPeers, uint32_
 
   	while(B > 0 && begin(AuxVirginPeers) != end(AuxVirginPeers)) // For B peers, or until max peers available.
   	{
-  		i = randomGen->GetInteger(0, distance(begin(AuxVirginPeers), end(AuxVirginPeers))); // Choose a random element
+  		i = randomGen->GetInteger(0, distance(begin(AuxVirginPeers), end(AuxVirginPeers))-1); // Choose a random element
   		peers.emplace_back(AuxVirginPeers[i]); // Emplace element at the end of return vector
   		AuxVirginPeers.erase(begin(AuxVirginPeers)+i); // Remove selected element from original list
 		--B; // Decrease B
@@ -206,7 +215,7 @@ bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from)
 {
 	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << 
 							 InetSocketAddress::ConvertFrom (from).GetIpv4());
-	cout << Simulator::Now().GetSeconds() << "\t" << m_address << endl;
+	// cout << Simulator::Now().GetSeconds() << "\t" << m_address << endl;
 	return true;
 }
 
@@ -233,7 +242,8 @@ void p2p::StopApplication(void)
 }
 
 void p2p::Setup(VirtualDiscovery *discovery, uint32_t minPeers, uint32_t minDiscoveryTimeout, uint32_t maxDiscoveryTimeout, 
-				uint32_t minIdleTimeout, uint32_t maxIdleTimeout, uint32_t discoveryTimer, Ptr<UniformRandomVariable> rand)
+				uint32_t minIdleTimeout, uint32_t maxIdleTimeout, uint32_t discoveryTimer, uint32_t gossipBinitial, uint32_t gossipB, uint32_t gossipF, 
+				Ptr<UniformRandomVariable> rand)
 {
 	m_discovery = discovery;
 	m_min_peers = minPeers;
@@ -242,6 +252,9 @@ void p2p::Setup(VirtualDiscovery *discovery, uint32_t minPeers, uint32_t minDisc
 	m_max_discovery_timeout = maxDiscoveryTimeout;
 	m_min_idle_timeout = minIdleTimeout;
 	m_max_idle_timeout = minIdleTimeout;
+	m_Binitial = gossipBinitial;
+	m_B = gossipB;
+	m_F = gossipF;
 	randomGen = rand;
 }
 
@@ -303,8 +316,16 @@ void p2p::ReadPacket(Ptr<Socket> socket, Address from)
 		}
 		else if (param == "GOSSIP")
 		{
+			cout << Simulator::Now().GetSeconds() << "\t" << m_address << "  \tRECEIVED_GOSSIP\t" << InetSocketAddress::ConvertFrom (from).GetIpv4 () << endl;
 			getline(request, param); // Parse MsgId.
-			Gossip(request.str(), atoi(param.c_str())); // Continue Gossip Algorithm.
+			uint32_t msg_id = atoi(param.c_str());
+			m_gossip_msg_map[msg_id].emplace_back(InetSocketAddress::ConvertFrom (from).GetIpv4 ()); // We know that who sent us msg, knows it already. We wont send it back.
+			if (m_gossip_msg_n_rcv.find(msg_id) == end(m_gossip_msg_n_rcv))
+			{
+				m_gossip_msg_n_rcv[msg_id] = 0;
+			}
+			++m_gossip_msg_n_rcv[msg_id];
+			Gossip(request.str(), msg_id); // Continue Gossip Algorithm.
 		}else{
 			keep = false;
 		}

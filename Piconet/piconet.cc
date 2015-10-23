@@ -95,6 +95,9 @@ main (int argc, char *argv[])
   cmd.AddValue("SimDuration", "Simulation time (in s)", simulation_time);
   cmd.AddValue("FirstJoinTime", "Last join time (in s)", first_join_time);
   cmd.AddValue("LastJoinTime", "Last join time (in s)", last_join_time);
+  cmd.AddValue("GossipBinitial", "Gossip Algorithm Binitial", gossip_b_initial);
+  cmd.AddValue("GossipB", "Gossip Algorithm B", gossip_b);
+  cmd.AddValue("GossipF", "Gossip Algorithm F", gossip_f);
   cmd.AddValue ("Seed", "Set Random Seed", random_seed);
   cmd.Parse (argc, argv);
   LogComponentEnable("p2pApplication", LOG_LEVEL_DEBUG);
@@ -161,7 +164,7 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer i = ipv4.Assign (devices);
 
   VirtualDiscovery discovery(randomGen);
-  StartSimulation<p2p>(nodes, randomGen, min_peers, min_discovery_timeout, max_discovery_timeout, min_idle_timeout, max_idle_timeout, discovery_timer, &discovery);
+  StartSimulation<p2p>(nodes, randomGen, min_peers, min_discovery_timeout, max_discovery_timeout, min_idle_timeout, max_idle_timeout, discovery_timer, gossip_b_initial, gossip_b, gossip_f, &discovery);
   printf("ALL_DONE\n");
 
   return EXIT_SUCCESS;

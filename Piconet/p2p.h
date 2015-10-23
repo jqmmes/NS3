@@ -27,7 +27,7 @@ public:
 
   p2p();
   virtual ~p2p();
-  void Setup(VirtualDiscovery*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, Ptr<UniformRandomVariable>);
+  void Setup(VirtualDiscovery*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, Ptr<UniformRandomVariable>);
 
 private:
 
@@ -73,7 +73,6 @@ private:
   map<Ptr<Socket>, uint32_t> m_map_last_pos; /*!< Last position for each socket connection */
   Ptr<UniformRandomVariable> randomGen; /*!< Random Generator */
   vector<Ipv4Address> m_connections; /*!< List of all connections */
-  map<uint32_t, vector<Ipv4Address>> m_gossip_msg_map;
   bool m_peer_full; /*!< TypeId Variable to check if node is full (reached max connections allowed) */
   uint32_t MAX_CONNECTIONS = 5; /*!< Maximum number of connections per node */
   bool m_connected = false; /*!< If Node is connected to some other node */
@@ -85,6 +84,8 @@ private:
   uint32_t m_max_idle_timeout = 20; /*!< Maximum timeout for idle */
 
   // Gossip Algorithm
+  map<uint32_t, vector<Ipv4Address>> m_gossip_msg_map;
+  map<uint32_t, uint32_t> m_gossip_msg_n_rcv;
   uint32_t m_Binitial = 1; /*!< Binitial parameter for Gossip Algorithm */
   uint32_t m_F = 1; /*!< F parameter for Gossip Algorithm */
   uint32_t m_B = 1; /*!< B parameter for Gossip Algorithm */

@@ -1,10 +1,3 @@
-/**
- * Por implementar:
- * server_max_files
- * client_update_on_join
- **/
-
-
 #ifndef PICO_H
 #define PICO_H
 
@@ -30,7 +23,10 @@ uint32_t max_discovery_timeout = 12;
 uint32_t min_idle_timeout = 20;
 uint32_t max_idle_timeout = 20;
 uint32_t discovery_timer = 100;
-
+// Gossip Parameters
+uint32_t gossip_b_initial = 1;
+uint32_t gossip_b = 1;
+uint32_t gossip_f = 1;
 
 
 /**
@@ -38,14 +34,14 @@ uint32_t discovery_timer = 100;
  **/
 template <typename T>
 void StartSimulation(NodeContainer nodes, Ptr<UniformRandomVariable> randomGen, uint32_t minPeers, uint32_t minDiscoveryTimeout, uint32_t maxDiscoveryTimeout, 
-        uint32_t minIdleTimeout, uint32_t maxIdleTimeout, uint32_t discoveryTimer, VirtualDiscovery *discovery)
+        uint32_t minIdleTimeout, uint32_t maxIdleTimeout, uint32_t discoveryTimer, uint32_t gossipBinitial, uint32_t gossipB, uint32_t gossipF, VirtualDiscovery *discovery)
 {
   NS_ASSERT(node_number > 0);
   Ptr<T> node;
   for (int x = 0; x < node_number; x++)
   {
     node = CreateObject<T> ();
-    node->Setup(discovery, minPeers, minDiscoveryTimeout, maxDiscoveryTimeout, minIdleTimeout, maxIdleTimeout, discoveryTimer, randomGen);
+    node->Setup(discovery, minPeers, minDiscoveryTimeout, maxDiscoveryTimeout, minIdleTimeout, maxIdleTimeout, discoveryTimer, gossipBinitial, gossipB, gossipF, randomGen);
     nodes.Get (x)->AddApplication (node);
     uint32_t start = 1000*(randomGen->GetValue(0.1,1.0));
     node->SetStartTime (MilliSeconds (start));
