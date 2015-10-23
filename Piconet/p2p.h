@@ -45,9 +45,9 @@ private:
   Ptr<Socket> StartSocket(void);
 
   // Comunications
-  void Send(const uint8_t * data, uint32_t size, Ipv4Address d_address, uint16_t port = 0);
-  void Send(string sdata, Ipv4Address d_address, uint16_t port = 0);
-  void Send(stringstream& sdata, Ipv4Address d_address, uint16_t port = 0);
+  void Send(const uint8_t * data, uint32_t size, Ipv4Address d_address, uint16_t port = 20);
+  void Send(string sdata, Ipv4Address d_address, uint16_t port = 20);
+  void Send(stringstream& sdata, Ipv4Address d_address, uint16_t port = 20);
   void ReceivePacket (Ptr<Socket> socket);
   void SendPacket(Ptr<Socket> socket, const uint8_t* data, uint32_t size, uint32_t i = 0);
   void ReadPacket(Ptr<Socket> socket, Address from);
@@ -81,6 +81,7 @@ private:
   uint32_t m_max_idle_timeout = 20; /*!< Maximum timeout for idle */
 
   uint32_t m_Binitial = 1; /*!< Gossip Algorithm Binitial */
+  uint32_t m_F = 1; /*!< F parameter for Gossip Algorithm */
 };
 
 #endif

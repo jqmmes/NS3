@@ -58,18 +58,31 @@ void p2p::StartApplication(void)
 //https://cseweb.ucsd.edu/~marzullo/pubs/harary.pdf
 void p2p::Gossip(string msg, uint32_t msg_id)
 {
+	list<Ipv4Address> broadcast_peers;
 	if (msg_id == 0)
 	{
 		m_gossip_msg_map[randomGen->GetInteger(0, INT_MAX)] = vector<Ipv4Address> (); // Formar um novo baseado no mac depois.
+		
+		broadcast_peers = GetRandomPeers(m_connections, m_Binitial);
+
 		uint32_t m_peers = distance(begin(m_connections), end(m_connections));
-		for (uint32_t i = 0; i < m_Binitial; ++i)
+		for (uint32_t i = 0; i < m_Binitial && i < m_peers; ++i)
 		{
-			if (i > m_peers)
-			{
-				return;
-			}
 			// Escolher um a um aleatoriamente e adicionar à lista de peers que ja viram esta msg.
 			continue;
+		}
+	}
+	else
+	{
+		NS_ASSERT(m_gossip_msg_map[msg_id]);
+		if (distance(begin(m_gossip_msg_map[msg_id]), end(m_gossip_msg_map[msg_id])) < m_F)
+		{
+			broadcast_peers = GetRandomPeers(GetVirginPeers(msg_id), m_B);
+			list<Ipv4Address>::iterator peer;
+			for (peer = begin(broadcast_peers); peer != end(broadcast_peers); ++peer)
+			{
+				Send(msg, (*peer));
+			}
 		}
 	}
 }
