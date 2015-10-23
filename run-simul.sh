@@ -7,7 +7,6 @@
 # Usage
 usage="Usage: run_simul.sh [options]
    --nodes:                 Number of Nodes (1 default) [1]
-   --p:                     Probability of CS [0.0-1.0] (0.5 default) [0.5]
    --min-peers:             Mininum number of peers. [1]
    --discovery-timer:       Time between discovery lookups (in ms) [100]
    --min-discovery-timeout: Minimum discovery timeout (in s) [5]
@@ -17,9 +16,9 @@ usage="Usage: run_simul.sh [options]
    --sim-duration:          Simulation time (in s) [3600]
    --first-join-time:       Last join time (in s) [0.1]
    --last-join-time:        Last join time (in s) [1]
-   --GossipBinitial:        Gossip Algorithm Binitial [1]
-   --GossipB:               Gossip Algorithm B [1]
-   --GossipF:               Gossip Algorithm F [1]
+   --gossip-b-initial:      Gossip Algorithm Binitial [1]
+   --gossip-b:              Gossip Algorithm B [1]
+   --gossip-f:              Gossip Algorithm F [1]
    --seed:                  Set Random Seed [1893]
    --out-file:		    Set output file [./out.txt]
    --path-to-waf:           Set path to waf executable (default: .)
@@ -27,7 +26,6 @@ usage="Usage: run_simul.sh [options]
 
 # Default values
 nodes="1"
-p="0.5"
 min_peers="1"
 discovery_timer="100"
 min_discovery_timeout="5"
@@ -53,6 +51,58 @@ case $key in
    --nodes)
 	nodes=$2
 	shift   
+   ;;
+   --gossip-b)
+	gossip_b=$2
+	shift
+   ;;
+   --gossip-b-initial)
+	gossip_b_initial=$2
+	shift
+   ;;
+   --gossip-f)
+	gossip_f=$2
+	shift
+   ;;
+   --min-peers)
+	min_peers="$2"
+	shift
+   ;;
+   --sim-duration)
+	sim_duration="$2"
+	shift
+   ;;
+   --discovery-timer)
+	discovery_timer="$2"
+	shift
+   ;;
+   --min-idle-timeout)
+	min_idle_timeout="$2"
+	shift
+   ;;
+   --max-idle-timeout)
+	max_idle_timeout="$2"
+	shift
+   ;;
+   --min-discovery-timeout)
+	min_discovery_timeout="$2"
+	shift
+   ;;
+   --max-discovery-timeout)
+	max_discovery_timeout="$2"
+	shift
+   ;;
+   --first-join-time)
+	first_join_time="$2"
+	shift
+   ;;
+   --last-join-time)
+	last_join_time="$2"
+	shift
+   ;;
+   --seed)
+	seed="$2"
+	shift
    ;;
    --out-file)
 	out_file="$2"
@@ -94,8 +144,10 @@ fi
 
 echo "Running simul with waf.. "
 
+cp -r Piconet ${path_to_waf}
+
 pushd ${path_to_waf}
-./waf --run="scratch/Piconet/Piconet --Seed=$RANDOM --Nodes=$nodes" > $out_file; 
+./waf --run="scratch/Piconet/Piconet --Seed=$RANDOM --Nodes=$nodes --GossipBinitial=$gossip_b_initial --GossipB=$gossip_b --GossipF=$gossip_f" > $out_file; 
 popd
 
 echo "Finished running simul."
