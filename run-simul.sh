@@ -17,6 +17,9 @@ usage="Usage: run_simul.sh [options]
    --sim-duration:          Simulation time (in s) [3600]
    --first-join-time:       Last join time (in s) [0.1]
    --last-join-time:        Last join time (in s) [1]
+   --GossipBinitial:        Gossip Algorithm Binitial [1]
+   --GossipB:               Gossip Algorithm B [1]
+   --GossipF:               Gossip Algorithm F [1]
    --seed:                  Set Random Seed [1893]
    --out-file:		    Set output file [./out.txt]
    --path-to-waf:           Set path to waf executable (default: .)
@@ -34,6 +37,9 @@ max_idle_timeout="20"
 sim_duration="3600"
 first_join_time="0.1"
 last_join_time="1"
+gossip_b_initial="1"
+gossip_b="1"
+gossip_f="1"
 seed="1893"
 out_file="$(pwd -P)/out.txt"
 path_to_waf="/home/hyrax/ns-allinone-3.24/ns-3.24/"
@@ -45,7 +51,8 @@ key="$1"
 
 case $key in
    --nodes)
-   
+	nodes=$2
+	shift   
    ;;
    --out-file)
 	out_file="$2"
