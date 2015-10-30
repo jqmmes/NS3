@@ -285,7 +285,7 @@ void HyraxExperimentAppWifiDirect::ReadData(ns3::Ptr<ns3::Socket> socket, ns3::A
 			if (show_data){
 				std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " Got DATA (" << line.size()+10 << " bytes) from " << ns3::InetSocketAddress::ConvertFrom (from).GetIpv4() << std::endl;
 			}else{
-				std::cout << ns3::Simulator::Now().GetSeconds() - fetch_init_time << std::endl;
+				std::cout << m_address << "\t" << ns3::Simulator::Now().GetSeconds() - fetch_init_time << std::endl;
 			}
 			files_fetched++;
 			RunSimulation();
