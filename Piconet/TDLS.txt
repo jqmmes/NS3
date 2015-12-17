@@ -1,0 +1,36 @@
+To set up and maintain a direct link, both TDLS peer STAs shall be
+associated with the same infrastructure
+BSS.
+
+A TDLS peer STA may be involved in direct links with multiple TDLS
+peer STAs at the same time.
+Simultaneous operation of DLS and TDLS between the same pair of STAs
+is not allowed. A DLS Request
+frame shall not be transmitted to a STA with which a TDLS direct link
+is currently active. A DLS Request
+frame received from a STA with which a TDLS direct link is currently
+active shall be discarded.
+
+TDLS shall not be used when the TDLS Prohibited subfield included in
+the Extended Capability element of
+the Association Response frame or Reassociation Response frame that
+led to the current association is set
+to one.
+
+5) If a TDLS Setup Request frame is received from a TDLS responder STA
+with which a currently
+active TDLS session exists, then the receiving STA shall tear down the
+existing TDLS direct link
+as if a TDLS Teardown frame was received, and respond with a TDLS
+Setup Response frame.
+
+
+It is recommended that in general TDLS STAs propose target channels
+that have no detectable medium
+occupancy. If no such channel is available, then it is recommended
+that the TDLS STA propose a target
+channel where beacons are detected but with little or no additional
+medium occupancy. It is further
+recommended that TDLS STAs do not propose a target channel where the
+presence of beacons indicate that
+ACM bits are set, unless little or no additional medium occupancy is detected.
