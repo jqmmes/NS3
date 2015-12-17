@@ -119,8 +119,8 @@ main (int argc, char *argv[])
   nodes.Create(node_number);
 
   WifiHelper wifi;
-  //wifi.SetStandard(WIFI_PHY_STANDARD_80211n_2_4GHZ);
-  wifi.SetStandard(WIFI_PHY_STANDARD_80211g);
+  wifi.SetStandard(WIFI_PHY_STANDARD_80211n_2_4GHZ);
+  //wifi.SetStandard(WIFI_PHY_STANDARD_80211g);
 
   YansWifiPhyHelper wifiPhy =  YansWifiPhyHelper::Default ();
 
@@ -135,6 +135,7 @@ main (int argc, char *argv[])
                                 "ControlMode",StringValue (phyMode));
   wifiMac.SetType ("ns3::AdhocWifiMac");
   NetDeviceContainer devices = wifi.Install (wifiPhy, wifiMac, nodes);
+  NetDeviceContainer TDLSdevices = wifi.Install (wifiPhy, wifiMac, nodes);
 
   MobilityHelper mobility;
   Ptr<UniformRandomVariable> x = CreateObject<UniformRandomVariable> ();
@@ -162,6 +163,7 @@ main (int argc, char *argv[])
   Ipv4AddressHelper ipv4;
   ipv4.SetBase ("0.0.0.0", "255.255.255.0");
   Ipv4InterfaceContainer i = ipv4.Assign (devices);
+
 
   VirtualDiscovery discovery(randomGen);
   StartSimulation<p2p>(nodes, randomGen, min_peers, min_discovery_timeout, max_discovery_timeout, min_idle_timeout, max_idle_timeout, discovery_timer, gossip_b_initial, gossip_b, gossip_f, &discovery);

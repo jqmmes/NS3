@@ -11,6 +11,7 @@ PhyRxOkTrace(ns3::Ptr<const ns3::Packet> pkt){
 
 int main(int argc, char *argv[]){
   LogComponentEnable("HyraxExperimentApp", ns3::LOG_LEVEL_INFO);
+  uint32_t seg_size = 10000;
 
   ns3::CommandLine cmd;
   cmd.AddValue ("Nodes", "Number of Nodes to be used in the simulation", RemoteNodesN);
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]){
   cmd.AddValue ("ShowData", "Show Send/Receive instead of the time a transfer took", show_data);
   cmd.AddValue ("Seed", "Seed to be used", seed);
   cmd.AddValue ("ExclusiveServers", "Use Exclusive Server. (Server Dont act as Client)", exclusive);
+  cmd.AddValue ("SegmentSize", "TCP Socket Segment Size", seg_size);
   cmd.Parse (argc, argv);
   //if (Scenario == 42 && MobileServersN == 1) RemoteNodesN++;
   if (Scenario != 1 && Scenario != 41 && exclusive) RemoteNodesN += MobileServersN; // Except for scenario 1 and 4a
@@ -57,6 +59,8 @@ int main(int argc, char *argv[]){
   }
 
   ns3::YansWifiChannelHelper channel = ns3::YansWifiChannelHelper::Default ();
+  channel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
+  channel.AddPropagationLoss ("ns3::JakesPropagationLossModel");
   ns3::YansWifiPhyHelper phy = ns3::YansWifiPhyHelper::Default ();
   phy.SetChannel (channel.Create ());
 
@@ -83,10 +87,10 @@ int main(int argc, char *argv[]){
     // mac.SetBlockAckThresholdForAc (ns3::AC_BE, 10);
     // mac.SetBlockAckInactivityTimeoutForAc (ns3::AC_BE, 5);
     // 135mbps also works.
-    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_5GHZ);
+    wifi.SetStandard(ns3::WIFI_PHY_STANDARD_80211n_2_4GHZ);
     wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
                                   "DataMode", ns3::StringValue("HtMcs7"),
-                                  "ControlMode", ns3::StringValue("HtMcs0"));
+                                  "ControlMode", ns3::StringValue("HtMcs7"));
     // wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager", 
     //                               "DataMode", ns3::StringValue("OfdmRate65MbpsBW20MHz"), 
     //                               "ControlMode", ns3::StringValue("OfdmRate6_5MbpsBW20MHz"));
@@ -157,25 +161,16 @@ int main(int argc, char *argv[]){
 
   // Mobility
   ns3::MobilityHelper mobility;
-  // mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
-  //                                "MinX", ns3::DoubleValue (0.0),
-  //                                "MinY", ns3::DoubleValue (0.0),
-  //                                "DeltaX", ns3::DoubleValue (5.0),
-  //                                "DeltaY", ns3::DoubleValue (10.0),
-  //                                "GridWidth", ns3::UintegerValue (3),
-  //                                "LayoutType", ns3::StringValue ("RowFirst"));
-
-  // mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
-  //                            "Bounds", ns3::RectangleValue (ns3::Rectangle (-5, 5, -5, 5)));
-  ns3::Ptr<ns3::ListPositionAllocator> positionAlloc = ns3::CreateObject<ns3::ListPositionAllocator> ();
-  positionAlloc->Add (ns3::Vector (0.0, 0.0, 0.0));
-  positionAlloc->Add (ns3::Vector (1.0, 0.0, 0.0));
-  positionAlloc->Add (ns3::Vector (2.0, 0.0, 0.0));
-  mobility.SetPositionAllocator (positionAlloc);
-
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+
+  ns3::Ptr<ns3::UniformDiscPositionAllocator> discPositionAlloc = ns3::CreateObject<ns3::UniformDiscPositionAllocator> ();
+  discPositionAlloc->SetX(0);
+  discPositionAlloc->SetY(0);
+  discPositionAlloc->SetRho(0.4);
+
+
+  mobility.SetPositionAllocator (discPositionAlloc);
   mobility.Install (remoteNodes);
-  //mobility.Install (remoteNodes_alt);
 
   if (wifiDirect){
     // Wifi Direct Nodes can move freely
@@ -184,8 +179,13 @@ int main(int argc, char *argv[]){
     WifiDirectMobility.Install (wifiDirectSlaves);
   }
 
+
+
+  ns3::Ptr<ns3::ListPositionAllocator> positionAlloc = ns3::CreateObject<ns3::ListPositionAllocator> ();
+  positionAlloc->Add (ns3::Vector (0.0, 0.0, 0.0));
+  mobility.SetPositionAllocator (positionAlloc);
   // AP and Server are at a fixed location
-  mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+  //mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   mobility.Install (wifiApNode);
   //mobility.Install (wifiApNode_alt);
   mobility.Install (serverNode);
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]){
   stack.SetTcp("ns3::TcpL4Protocol");
   ns3::Config::SetDefault("ns3::TcpSocket::SndBufSize", ns3::UintegerValue (52428800));
   ns3::Config::SetDefault("ns3::TcpSocket::RcvBufSize", ns3::UintegerValue (52428800));
-  ns3::Config::SetDefault("ns3::TcpSocket::SegmentSize", ns3::UintegerValue (10000)); // Afecta a velocidade
+  ns3::Config::SetDefault("ns3::TcpSocket::SegmentSize", ns3::UintegerValue (seg_size)); // Afecta a velocidade
   stack.Install (serverNode);
   stack.Install (wifiApNode);
   //stack.Install (wifiApNode_alt);
@@ -286,7 +286,7 @@ int main(int argc, char *argv[]){
 
   ns3::Simulator::Stop(ns3::MilliSeconds(TotalSimulationTime));
   ns3::Simulator::Run();
-  ns3::Simulator::Destroy ();
+  ns3::Simulator::Destroy();
 
 	return EXIT_SUCCESS;
 }

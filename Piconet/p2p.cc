@@ -139,7 +139,7 @@ void p2p::Formation(uint32_t i, uint32_t limit)
 	}
 	setDiscoverable(false);
 	vector<tuple<Ipv4Address,uint16_t>> devices = m_discovery->getAll(); // devices = discovery()
-	if (distance(devices.begin(), devices.end()) > 0)
+	if (distance(devices.begin(), devices.end()) > 0 && i >= limit*10)
 	{
 		// FOR device : devices
 		vector<tuple<Ipv4Address, uint16_t>>::iterator iterator;
@@ -168,6 +168,7 @@ void p2p::Formation(uint32_t i, uint32_t limit)
 
 	if (i < limit*10)
 	{
+		// Coletar peers aqui
 		Simulator::Schedule(MilliSeconds(m_discovery_timer), &p2p::Formation, this, ++i, limit);
 	}
 	else

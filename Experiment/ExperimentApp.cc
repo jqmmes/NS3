@@ -34,6 +34,7 @@ void HyraxExperimentApp::StartApplication(void)
 	// std::cout << GetNode()->GetObject<ns3::MobilityModel>()->GetPosition () << std::endl;
 	
 	Listen = CreateSocket();
+	TDLSListen = CreateTDLSSocket();
 
 	if(m_type == "Server" && measure_only_server)	{
 		RunSimulation();
@@ -91,10 +92,10 @@ void HyraxExperimentApp::genServerList(){
 }
 
 ns3::Ptr<ns3::Socket> HyraxExperimentApp::CreateSocket(void){
-	ns3::Ptr<ns3::Socket> socket = ns3::Socket::CreateSocket (GetNode(), 
-																							ns3::TcpSocketFactory::GetTypeId ());
+	ns3::Ptr<ns3::Socket> socket = ns3::Socket::CreateSocket (GetNode(), ns3::TcpSocketFactory::GetTypeId ());
 
-	socket->Bind(ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), 20));
+	//socket->Bind(ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), 20));
+	socket->Bind(ns3::InetSocketAddress (m_address, 20));
 	socket->Listen();
 	socket->SetAllowBroadcast (true);
 
@@ -102,6 +103,27 @@ ns3::Ptr<ns3::Socket> HyraxExperimentApp::CreateSocket(void){
 														 ns3::MakeCallback(&HyraxExperimentApp::AcceptConnection, this));
 	socket->SetRecvCallback (ns3::MakeCallback (&HyraxExperimentApp::ReceivePacket, this));
 	socket->SetCloseCallbacks (ns3::MakeCallback (&HyraxExperimentApp::NormalClose, this),
+														 ns3::MakeCallback (&HyraxExperimentApp::TDLSErrorClose, this));
+	socket->SetConnectCallback (ns3::MakeCallback (&HyraxExperimentApp::ConnectSuccess, this),
+														 ns3::MakeCallback (&HyraxExperimentApp::ConnectFail, this));
+
+	socket_data[socket] = malloc(0);
+	current_socket_data[socket] = 0;
+
+	return socket;
+}
+
+ns3::Ptr<ns3::Socket> HyraxExperimentApp::CreateTDLSSocket(void){
+	ns3::Ptr<ns3::Socket> socket = ns3::Socket::CreateSocket (GetNode(), ns3::TcpSocketFactory::GetTypeId ());
+	std::cout << m_address << "\tCreateTDLSSocket" << std::endl;
+	socket->Bind(ns3::InetSocketAddress (ns3::Ipv4Address::GetAny (), 20)); // Binds to 0.0.0.0:20
+	socket->Listen();
+	socket->SetAllowBroadcast (true);
+
+	socket->SetAcceptCallback (ns3::MakeCallback (&HyraxExperimentApp::TDLSConnectionRequest, this),
+														 ns3::MakeCallback(&HyraxExperimentApp::AcceptConnection, this)); // Accepting connection. If accepted, next callback returns socket.
+	socket->SetRecvCallback (ns3::MakeCallback (&HyraxExperimentApp::ReceivePacket, this));
+	socket->SetCloseCallbacks (ns3::MakeCallback (&HyraxExperimentApp::TDLSNormalClose, this),
 														 ns3::MakeCallback (&HyraxExperimentApp::ErrorClose, this));
 	socket->SetConnectCallback (ns3::MakeCallback (&HyraxExperimentApp::ConnectSuccess, this),
 														 ns3::MakeCallback (&HyraxExperimentApp::ConnectFail, this));
@@ -144,10 +166,17 @@ void HyraxExperimentApp::Scenario_3(void){
 	ns3::Ptr<ns3::Socket> ApSocket = CreateSocket();
 	uint32_t next = randomGen->GetInteger(0, std::distance(std::begin(ServerList), std::end(ServerList))-1);
 	ApSocket->Connect (ns3::InetSocketAddress (ServerList.at(next), 20));
-	socket = CreateSocket();
-	socket->Connect (ns3::InetSocketAddress (AdHocServerList.at(next), 20));
+	socket = CreateTDLSSocket();
+	uint32_t status = socket->Connect (ns3::InetSocketAddress (AdHocServerList.at(next), 20));
 	fetch_init_time = ns3::Simulator::Now().GetSeconds();
-	Send(socket, "SEND\nEND\n");
+	std::cout << status << std::endl;
+	if (status == 0){
+		std::cout << "OkTDLSConnect" << std::endl;
+		Send(socket, "SEND\nEND\n");
+	}else{ // Fallback
+		std::cout << "Fallback" << std::endl;
+		Send(ApSocket, "SEND\nEND\n");
+	}
 }
 
 void HyraxExperimentApp::Send(ns3::Ptr<ns3::Socket> socket, std::string data){
@@ -173,12 +202,32 @@ void HyraxExperimentApp::NormalClose(ns3::Ptr<ns3::Socket> socket){
 	NS_LOG_DEBUG(m_address << " NormalClose (" << socket << ")");
 	if (debug)
 		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " NormalClose (" << socket << ")" << std::endl;
+	std::cout << "Normal Closing Normal Bro..." << std::endl;
+}
+
+void HyraxExperimentApp::TDLSNormalClose(ns3::Ptr<ns3::Socket> socket){
+	NS_LOG_DEBUG(m_address << " NormalClose (" << socket << ")");
+	if (debug)
+		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " NormalClose (" << socket << ")" << std::endl;
+	NS_ASSERT(TDLS_cons > 0);
+	--TDLS_cons;
+	std::cout << "Closing Normal Bro..." << std::endl;
 }
 
 void HyraxExperimentApp::ErrorClose(ns3::Ptr<ns3::Socket> socket){
 	NS_LOG_DEBUG(m_address << " ErrorClose (" << socket << ")");
 	if (debug)
 		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " ErrorClose (" << socket << ")" << std::endl;
+	std::cout << "Normal Closing Error Bro..." << std::endl;
+}
+
+void HyraxExperimentApp::TDLSErrorClose(ns3::Ptr<ns3::Socket> socket){
+	NS_LOG_DEBUG(m_address << " ErrorClose (" << socket << ")");
+	if (debug)
+		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " ErrorClose (" << socket << ")" << std::endl;
+	NS_ASSERT(TDLS_cons > 0);
+	--TDLS_cons;
+	std::cout << "Closing Error Bro..." << std::endl;
 }
 
 bool HyraxExperimentApp::ConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from){
@@ -187,6 +236,20 @@ bool HyraxExperimentApp::ConnectionRequest(ns3::Ptr<ns3::Socket> socket, const n
 		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " ConnectionRequest (" << socket << ") from " 
 						<< ns3::InetSocketAddress::ConvertFrom (from).GetIpv4() << std::endl;
 	return true;
+}
+
+bool HyraxExperimentApp::TDLSConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from){
+	NS_LOG_DEBUG(m_address << " TDLSConnectionRequest (" << socket << ") from " << ns3::InetSocketAddress::ConvertFrom (from).GetIpv4());
+	if (debug)
+		std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " TDLSConnectionRequest (" << socket << ") from " 
+						<< ns3::InetSocketAddress::ConvertFrom (from).GetIpv4() << std::endl;
+	if (TDLS_cons < max_TDLS_cons && TDLS_enabled){
+		std::cout << "ahoy brother" << std::endl;
+		++TDLS_cons;
+		return true;
+	}
+	std::cout << "Naha brother" << std::endl;
+	return false;
 }
 
 void HyraxExperimentApp::AcceptConnection(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from){
@@ -264,6 +327,8 @@ void HyraxExperimentApp::ReadData(ns3::Ptr<ns3::Socket> socket, ns3::Address fro
 		}
 		getline(request, line);
 	}
+	std::cout << m_address << "\t" << socket->Close() << std::endl;
+	--TDLS_cons;
 }
 
 void HyraxExperimentApp::StopApplication(void)

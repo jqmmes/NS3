@@ -25,7 +25,10 @@ private:
   // Socket related stuff
   void NormalClose(ns3::Ptr<ns3::Socket> socket);
   void ErrorClose(ns3::Ptr<ns3::Socket> socket);
+  void TDLSNormalClose(ns3::Ptr<ns3::Socket> socket);
+  void TDLSErrorClose(ns3::Ptr<ns3::Socket> socket);
   bool ConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
+  bool TDLSConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
   void AcceptConnection(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
   void ConnectSuccess(ns3::Ptr<ns3::Socket> socket);
   void ConnectFail(ns3::Ptr<ns3::Socket> socket);
@@ -33,11 +36,13 @@ private:
   void Send(ns3::Ptr<ns3::Socket> socket, std::string data);
   void ReadData(ns3::Ptr<ns3::Socket> socket, ns3::Address from, std::string data);
   ns3::Ptr<ns3::Socket> CreateSocket(void);
+  ns3::Ptr<ns3::Socket> CreateTDLSSocket(void);
   std::map<ns3::Ptr<ns3::Socket>, void *> socket_data;
   std::map<ns3::Ptr<ns3::Socket>, uint32_t> current_socket_data;
 
 
   ns3::Ptr<ns3::Socket> Listen;
+  ns3::Ptr<ns3::Socket> TDLSListen;
   std::string m_type;
   ns3::Ipv4Address m_address;
   ns3::Ptr<ns3::Socket> socket;
@@ -80,6 +85,10 @@ private:
 	uint32_t c_index = 0;
 	uint32_t total_data = 0;
 	uint32_t total_sent_data = 0;
+
+	bool TDLS_enabled = true;
+	uint32_t TDLS_cons = 0;
+	uint32_t max_TDLS_cons = 1;
 };
 
 #endif
