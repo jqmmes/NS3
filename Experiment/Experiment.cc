@@ -161,17 +161,6 @@ int main(int argc, char *argv[]){
 
   // Mobility
   ns3::MobilityHelper mobility;
-  // mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
-  //                                "MinX", ns3::DoubleValue (0.0),
-  //                                "MinY", ns3::DoubleValue (0.0),
-  //                                "DeltaX", ns3::DoubleValue (5.0),
-  //                                "DeltaY", ns3::DoubleValue (10.0),
-  //                                "GridWidth", ns3::UintegerValue (3),
-  //                                "LayoutType", ns3::StringValue ("RowFirst"));
-
-  // mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
-  //                            "Bounds", ns3::RectangleValue (ns3::Rectangle (-5, 5, -5, 5)));
-
   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
 
   ns3::Ptr<ns3::UniformDiscPositionAllocator> discPositionAlloc = ns3::CreateObject<ns3::UniformDiscPositionAllocator> ();
@@ -182,7 +171,6 @@ int main(int argc, char *argv[]){
 
   mobility.SetPositionAllocator (discPositionAlloc);
   mobility.Install (remoteNodes);
-  //mobility.Install (remoteNodes_alt);
 
   if (wifiDirect){
     // Wifi Direct Nodes can move freely
@@ -294,7 +282,7 @@ int main(int argc, char *argv[]){
 
   ns3::Simulator::Stop(ns3::MilliSeconds(TotalSimulationTime));
   ns3::Simulator::Run();
-  ns3::Simulator::Destroy ();
+  ns3::Simulator::Destroy();
 
 	return EXIT_SUCCESS;
 }
