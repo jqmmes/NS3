@@ -1,0 +1,97 @@
+\documentclass[a4paper]{book}
+\usepackage{fullpage}
+\usepackage{verbatim}
+\usepackage{listings}
+
+
+\begin{document}
+
+\title{{\Huge ns3 for beginners} \\
+\vspace{1em}\large A guide towards running Hyrax simulations\vspace{5em}}
+\author{Joaquim M. E. Silva \\ jqmmes@gmail.com}
+\date{December 2015}
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+
+\section{Installing}
+
+\section{Configurations}
+
+\section{Running a simulation}
+
+
+\chapter{Simulations}
+
+\section{Overlay Simulation}
+
+
+\section{Technologies Experiment}
+
+\begin{itemize}
+	\item[] Running:
+	\begin{itemize}
+		\item[] \footnotesize \begin{verbatim}./waf --run="scratch/Experiment/Experiment --Nodes=1 --Servers=1 --Scenario=3 --Seed=$RANDOM --ExclusiveServers"\end{verbatim}
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item[] Parameters:
+	\begin{itemize}
+		\item[] \textbf{Nodes}: Number of Nodes to be used in the simulation
+		\item[] \textbf{Servers}: Number of Servers to be used in the simulation
+		\item[] \textbf{Scenario}: Scenario to run
+		\begin{itemize}
+			\item 1: 1 Server + AP + n Nodes
+			\item 2: AP + m Mobile Servers + n Nodes (m<=n)
+			\item 3: AP + TDLS + m Mobile Servers + n Nodes (m<=n)
+			\item 41: WD + GO as Server + n Nodes
+			\item 42: WD + GO + m Mobile Servers + n Nodes (m<=n)
+			\item 43: WD + m Mobiles Servers + n Nodes (m<=n) No groups formed in the beggining
+			\item 51: WD + Legacy AP as Server + n Nodes
+			\item 52: WD + Legacy AP + m Mobile Servers + n Nodes (m<=n)
+			\item 6: WD + GO + TDLS + m Mobile Servers + n Nodes (m<=n)
+		\end{itemize}
+		\item[] \textbf{FileSize}: File Size to be shared
+		\item[] \textbf{Debug}: Debug socket callbacks
+		\item[] \textbf{ShowPackets}: Show every packet received
+		\item[] \textbf{ShowData}: Show Send/Receive instead of the time a transfer took
+		\item[] \textbf{Seed}: Seed to be used
+		\item[] \textbf{ExclusiveServers}: Use Exclusive Server. (Server Don't act as Client)
+		\item[] \textbf{SegmentSize}: TCP Socket Segment Size
+	\end{itemize}
+\end{itemize}	
+
+\section{CMU Review App Simulation}
+
+
+\chapter{Code}
+
+\section{Network Configurations}
+
+
+\section{\textit{VirtualDiscovery}}
+
+
+\section{TDLS}
+
+\section{Wifi-Direct}
+
+\section{Mobility}
+
+\chapter{Advanced}
+
+\section{Developing a new simulation from scratch}
+
+
+\section{Tracing}
+
+
+\section{Parallel Execution}
+
+
+\section{Direct Code Execution}
+
+\end{document}
