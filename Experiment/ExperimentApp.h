@@ -30,6 +30,7 @@ private:
   bool ConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
   bool TDLSConnectionRequest(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
   void AcceptConnection(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
+  void AcceptTDLSConnection(ns3::Ptr<ns3::Socket> socket, const ns3::Address& from);
   void ConnectSuccess(ns3::Ptr<ns3::Socket> socket);
   void ConnectFail(ns3::Ptr<ns3::Socket> socket);
   void ReceivePacket(ns3::Ptr<ns3::Socket> socket);
@@ -89,6 +90,7 @@ private:
 	bool TDLS_enabled = true;
 	uint32_t TDLS_cons = 0;
 	uint32_t max_TDLS_cons = 1;
+	ns3::Ptr<ns3::Socket> tdlsSock;
 };
 
 #endif

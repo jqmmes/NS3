@@ -4,10 +4,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("HyraxExperiment");
 
-void
-PhyRxOkTrace(ns3::Ptr<const ns3::Packet> pkt){
-  std::cout << "wut" << std::endl;
-}
+// void
+// PhyRxOkTrace(ns3::Ptr<const ns3::Packet> pkt){
+//   std::cout << "wut" << std::endl;
+// }
 
 int main(int argc, char *argv[]){
   LogComponentEnable("HyraxExperimentApp", ns3::LOG_LEVEL_INFO);
@@ -225,16 +225,7 @@ int main(int argc, char *argv[]){
 	address.Assign (staDevices);
   address.Assign (apDevices);
 
-  //ns3::Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
-  // address.SetBase ("10.1.10.0", "255.255.255.0");
-  // address.Assign (p2pDevices_alt);
-
-  // address.SetBase ("10.1.11.0", "255.255.255.0");
-  // address.Assign (staDevices_alt);
-  // address.Assign (apDevices_alt);
-
-  // Populate Routing tables for the base network
+    // Populate Routing tables for the base network
   ns3::Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   // Attribute ips to the secondary interface AdHoc
