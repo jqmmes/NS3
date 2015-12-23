@@ -203,9 +203,13 @@ int main(int argc, char *argv[]){
   stack.Install (remoteNodes);
   //stack.Install (remoteNodes_alt);
   
-
-  ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(40));
-  ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ShortGuardEnabled", ns3::BooleanValue(true));
+  if (phy_type == "802.11n" || phy_type == "802.11ac"){
+    if (phy_type == "802.11n")
+      ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(40));
+    else
+      ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(160));
+    ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ShortGuardEnabled", ns3::BooleanValue(true));
+  }
   
 
   // olsr.AssignStreams (p2pNodes, 0);

@@ -149,6 +149,7 @@ void p2p::Formation(uint32_t i, uint32_t limit)
 			if (!isPeerFull(getNode(get<0>(*iterator))))
 			{
 				Send("FORMATION\nJOIN\nEND\n", get<0>(*iterator), 20);
+				// Start a new socket to this new device.
 				cout << Simulator::Now().GetSeconds() << "  \t" << m_address << "  \tFOUND_DEVICE\t"
 				 	 << get<0>(*iterator) << "  \t" << i << "*" << m_discovery_timer << "ms" << endl;
 				++n_peers;
@@ -192,7 +193,6 @@ Ptr<Socket> p2p::StartSocket(void)
 	socket->Listen();
 	socket->SetAcceptCallback (MakeCallback (&p2p::ConnectionRequest, this),
 														 MakeCallback(&p2p::AcceptConnection, this));
-	socket->SetRecvCallback (MakeCallback (&p2p::ReceivePacket, this));
 	socket->SetCloseCallbacks(MakeCallback (&p2p::NormalClose, this), 
 														MakeCallback (&p2p::ErrorClose, this));
 	socket->SetAllowBroadcast (true);
@@ -205,35 +205,43 @@ Ptr<Socket> p2p::StartSocket(void)
 void p2p::NormalClose(Ptr<Socket> socket)
 {
 	NS_LOG_DEBUG(m_address << " NormalClose (" << socket << ")");
+	// Escutar aqui para a falha.
 }
 
 void p2p::ErrorClose(Ptr<Socket> socket)
 {
 	NS_LOG_DEBUG(m_address << " ErrorClose (" << socket << ")");
+	// Escutar aqui para a falha.
 }
 
 bool p2p::ConnectionRequest(Ptr<Socket> socket, const ns3::Address& from)
 {
 	NS_LOG_DEBUG(m_address << " ConnectionRequest (" << socket << ") from " << 
 							 InetSocketAddress::ConvertFrom (from).GetIpv4());
-	// cout << Simulator::Now().GetSeconds() << "\t" << m_address << endl;
+	cout << Simulator::Now().GetSeconds() << "\t" << m_address << "\tConnectionRequest" << endl;
+	// Só aceitar se ainda houverem slots vazias
 	return true;
 }
 
 void p2p::AcceptConnection(Ptr<Socket> socket, const ns3::Address& from)
 {
 	NS_LOG_DEBUG(m_address << " AcceptConnection (" << socket << ")");
+	cout << Simulator::Now().GetSeconds()  << "\t"  << m_address << "\tAcceptConnection" << endl;
+	// Posso por aqui na lista de sockets abertas, ou nao.
 	socket->SetRecvCallback (MakeCallback (&p2p::ReceivePacket, this));
 }
 
 void p2p::ConnectSuccess(Ptr<Socket> socket)
 {	
 	NS_LOG_DEBUG(m_address << " ConnectSuccess (" << socket << ")");
+	// Esta cena não esta a ser chamada nunca. Tentar perceber quando é que isto é usado.
+	cout << Simulator::Now().GetSeconds()  << "\t"  << m_address << "\tConnectionSuccess" << endl;
 }
 
 void p2p::ConnectFail(Ptr<Socket> socket)
 {
 	NS_LOG_DEBUG(m_address << " ConnectFail (" << socket << ")");
+	cout << Simulator::Now().GetSeconds()  << "\t"  << m_address << "\tConnectionFail" << endl;
 }
 
 void p2p::StopApplication(void)
