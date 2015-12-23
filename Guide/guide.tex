@@ -2,7 +2,9 @@
 \usepackage{fullpage}
 \usepackage{verbatim}
 \usepackage{listings}
+\usepackage[ruled,vlined]{algorithm2e}
 
+\newcommand{\forcond}{$i=0$ \KwTo $n$}
 
 \begin{document}
 
@@ -74,8 +76,128 @@
 
 \section{\textit{VirtualDiscovery}}
 
+\begin{itemize}
+\item[] \textbf{Public Methods:}
+\item[]\begin{verbatim}
+void VirtualDiscovery::add(Ipv4Address ip, uint16_t port)
+tuple<Ipv4Address,uint16_t> VirtualDiscovery::discover(void)
+vector<tuple<Ipv4Address,uint16_t>> VirtualDiscovery::getAll(void)
+uint32_t VirtualDiscovery::GetN(void)
+void VirtualDiscovery::remove(Ipv4Address ip, uint16_t port)
+\end{verbatim}
+\end{itemize}
 
 \section{TDLS}
+\begin{itemize}
+\item[] \textbf{Public Methods:}
+\item[]\begin{verbatim}
+void SendTDLS(Ipv4Address ip, uint16_t port, std::string message)
+\end{verbatim}
+\item[] \textbf{Algorithms:}
+\end{itemize}
+
+\begin{algorithm}[H]
+\SetKwFunction{STDLS}{SendTDLS}
+\SetKwProg{Fn}{Function}{}{end}
+\SetKwFunction{Schedule}{Schedule}
+\SetKwFunction{CheckTDLS}{CheckTDLS}
+\SetKwProg{callback}{Callback}{}{end}
+\SetKwFunction{ConnectSuccess}{ConnectSuccess}
+\SetKwFunction{DeleteEntry}{DeleteEntry}
+\SetKwFunction{assert}{assert}
+\SetKwArray{TDLSData}{TDLSData}
+\SetAlgoLined
+
+
+\KwData{$message$ - Message to be sent; $socket$ - TDLS (using Wi-Fi Ad-hoc) socket}
+\KwResult{A message is sent using TDLS or regular Wifi as fallback}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+
+\Input{$timeout$ - duration until CheckTDLS fallback occurs}
+\Output{nothing}
+
+\Fn(\tcc*[h]{Algorithm to Send a message with TDLS}){\STDLS{socket, message}}{
+	\uIf{ActiveTDLSCons $<$ MAX}{
+		\nl $socket \rightarrow connect(ServerIp)$\;
+		\nl $\TDLSData{socket} \gets socket$ \;
+		\nl $\TDLSData{message} \gets message$ \;
+		\nl $\TDLSData{delivered} \gets$ false \;
+		\nl $ActiveTDLSCons++$ \;
+		\nl \Schedule{\CheckTDLS{socket, message}, timeout}\;
+	}
+	\Else{
+		\nl $RegularSocket \rightarrow connect(ServerIp)$\;
+		\nl $RegularSocket \rightarrow send(message)$\;
+	}
+}
+
+\Fn(){\CheckTDLS{socket, message}}{
+	\If(){$\TDLSData{socket} = socket \wedge \TDLSData{delivered} = false$}{
+		\nl $RegularSocket \rightarrow connect(ServerIp)$\;
+		\nl $RegularSocket \rightarrow send(message)$\;
+	}
+	\tcc*[h]{Deletes Hashmap entry} \\
+	\nl \DeleteEntry{\TDLSData{$socket$}} \;
+	
+}
+
+\callback(\tcc*[h]{Callback called if $socket \rightarrow connect(ServerIp)$ succeeds}){\ConnectSuccess(socket)}{
+	\nl \TDLSData{$delivered$} $\gets$ true \;
+}
+
+\caption{TDLS ns3 Algorithm - Client\label{tdlsAlgC}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\SetKwFunction{TDLSA}{TDLSAccept}
+\SetKwFunction{SPA}{SecondPhaseAccept}
+\SetKwProg{Fn}{Function}{}{end}
+\SetKwProg{callback}{Callback}{}{end}
+\SetAlgoLined
+
+\KwData{$socket$ - TDLS (using Wi-Fi Ad-hoc) socket}
+\KwResult{A message is received using TDLS or regular Wifi as fallback}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+
+\Input{$MAX$ - Maximum number of simultaneous TDLS sockets opened}
+\Output{nothing}
+
+
+\Fn(){\TDLSA{ListenSocket}}{
+	\If(){$ActiveTDLSCons < MAX$}{
+		%\nl $ConnectedTDLS \gets socket$ \;
+		\nl $ActiveTDLSCons++$ \;
+		\nl $socket \rightarrow setAcceptCallback(\SPA)$ \;
+		\nl \Return true\;
+	}
+	\nl \Return false\;
+}
+
+\callback(){\SPA{socket}}{
+	\nl $ConnectedTDLS \gets socket$\;
+}
+
+
+
+
+\caption{TDLS ns3 Algorithm - Server\label{tdlsAlgS}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\SetKwProg{Fn}{Function}{}{end}
+\SetKwFunction{Close}{CloseSocket}
+\SetAlgoLined
+
+\Fn(){\Close{socket}}{
+	\nl $socket \rightarrow Close()$ \;
+	\If(){$ConnectedTDLS = socket$}{
+		\nl $ActiveTDLSCons--$ \;
+		\nl $ConnectedTDLS \gets Null$ \;
+	}
+}
+
+\caption{TDLS ns3 Algorithm - Closing Socket\label{tdlsAlgS}}
+\end{algorithm}
 
 \section{Wifi-Direct}
 
