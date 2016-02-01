@@ -9,6 +9,14 @@
 #include "ns3/internet-module.h"
 #include <vector>
 
+struct TDLS
+{
+	ns3::Ptr<ns3::Socket> socket;//"] = socket;
+	std::string data;//"] = data;
+	bool delivered;// = false;
+};
+
+
 class HyraxExperimentApp : public ns3::Application
 {
 public:
@@ -18,7 +26,7 @@ public:
 	void Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive);
 
 private:
-	virtual void StartApplication (void);
+  virtual void StartApplication (void);
   virtual void StopApplication (void);
   void RunSimulation(void);
 
@@ -61,12 +69,12 @@ private:
 	uint32_t scenario_id = 1;
 
 	// General data
-	uint32_t n_nodes;
+	uint32_t m_n_nodes;
 	uint32_t files_to_fetch = 10;
 	uint32_t files_fetched = 0;
 	uint32_t server_files_fetched = 0;
 	double fetch_init_time;
-	uint32_t n_servers = 1;
+	uint32_t m_n_servers = 1;
 	bool exclusive_servers = false;
 	void genServerList(void);
 	std::vector<ns3::Ipv4Address> ServerList;
@@ -87,10 +95,29 @@ private:
 	uint32_t total_data = 0;
 	uint32_t total_sent_data = 0;
 
+
+	/**
+	* TDLS Data
+	**/
+
+	void SendTDLS(ns3::Ptr<ns3::Socket> socket, std::string data, ns3::Ipv4Address to);
+	void CheckTDLS(ns3::Ptr<ns3::Socket> socket, std::string data, ns3::Ipv4Address to);
 	bool TDLS_enabled = true;
-	uint32_t TDLS_cons = 0;
-	uint32_t max_TDLS_cons = 1;
+	uint32_t m_ActiveTDLSCons = 0;
+	uint32_t m_MaxTDLSCons = 1;
+	uint32_t m_TDLSTimeout = 200; /*< 100ms */
 	ns3::Ptr<ns3::Socket> tdlsSock;
+
+	TDLS m_TDLSData;
+
+
+	/**
+	* Temporary for TDLS experiment.
+	**/
+	void genServerListSpecial(void);
+	bool m_tdls_active = false;
+
+
 };
 
 #endif
