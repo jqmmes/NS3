@@ -9,6 +9,75 @@ NS_LOG_COMPONENT_DEFINE ("HyraxExperiment");
 //   std::cout << "wut" << std::endl;
 // }
 
+void installInterface(ns3::NodeContainer Nodes, std::string IP_BASE);
+
+
+void GenInterfaces(ns3::NodeContainer Nodes){
+  std::array<std::set<uint32_t>,12> groups;
+  for (uint32_t s=0; s < MobileServersN; s++){
+    groups.at(s % 12).insert(s);
+  }
+  for (uint32_t c=0; c < RemoteNodesN-MobileServersN; c++){
+    groups.at(c % std::min(MobileServersN,(uint32_t)12)).insert(MobileServersN+c);
+  }
+
+  for (uint32_t g=0; g < groups.size(); g++){
+    if (groups.at(g).size() == 0) break;
+
+    ns3::NodeContainer tmpNodeContainer;
+    
+    std::stringstream s;
+    s.str();
+    s << "10.2." << g << ".0";
+    std::cout << s.str() << std::endl;
+
+    if (groups.at(g).size() > 3){ // Isto so funciona para os casos normais. Quando ouver mais de 12 servers, nao funciona.
+      // Install 1 TDLS interface on server and first client.
+      auto it = begin(groups.at(g));
+      tmpNodeContainer.Add(Nodes.Get((*it)));
+      it++;
+      tmpNodeContainer.Add(Nodes.Get((*it)));
+      
+      installInterface(tmpNodeContainer, s.str());
+    }else{
+      // Install 2 TDLS interfaces on server and on all clients 1.
+      for (auto it = begin(groups.at(g)); it != end(groups.at(g)); it++){
+        tmpNodeContainer.Add(Nodes.Get((*it)));
+      }
+      installInterface(tmpNodeContainer, s.str());
+      s.str();
+      s << "10.3." << g << ".0";
+      installInterface(tmpNodeContainer, s.str());
+    }
+  }
+}
+
+void installInterface(ns3::NodeContainer Nodes, std::string IP_BASE){
+  ns3::WifiHelper wifi_TDLS_IFACE = ns3::WifiHelper::Default ();
+  ns3::YansWifiChannelHelper channel_TLDS = ns3::YansWifiChannelHelper::Default ();
+  ns3::YansWifiPhyHelper phy_TDLS = ns3::YansWifiPhyHelper::Default ();
+  ns3::Ssid ssid = ns3::Ssid ("ns3-wifi");
+
+  channel_TLDS.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
+  channel_TLDS.AddPropagationLoss ("ns3::JakesPropagationLossModel");
+
+  phy_TDLS.SetChannel(channel_TLDS.Create());
+
+  phy_TDLS.Set ("ShortGuardEnabled", ns3::BooleanValue(true));
+
+  wifi_TDLS_IFACE.SetStandard(ns3::WIFI_PHY_STANDARD_80211ac);
+  wifi_TDLS_IFACE.SetRemoteStationManager ("ns3::ConstantRateWifiManager", "DataMode", ns3::StringValue("VhtMcs9"), "ControlMode", ns3::StringValue("VhtMcs0"));
+
+  VHTMac.SetType ("ns3::AdhocWifiMac", "Ssid", ns3::SsidValue (ssid));
+
+  address.SetBase (IP_BASE.c_str(), "255.255.255.0");
+  address.Assign(wifi_TDLS_IFACE.Install(phy_TDLS, VHTMac, Nodes));
+}
+
+//ns3::NetDeviceContainer NodesDevices = wifi_TDLS_IFACE.Install(phy_TDLS, VHTMac, Nodes);
+//address.Assign(NodesDevices);
+
+
 int main(int argc, char *argv[]){
   LogComponentEnable("HyraxExperimentApp", ns3::LOG_LEVEL_INFO);
   uint32_t seg_size = 10000;
@@ -210,7 +279,6 @@ int main(int argc, char *argv[]){
       ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ChannelWidth", ns3::UintegerValue(160));
     ns3::Config::Set("/NodeList/*/DeviceList/*/$ns3::WifiNetDevice/Phy/ShortGuardEnabled", ns3::BooleanValue(true));
   }
-  
 
   // olsr.AssignStreams (p2pNodes, 0);
   // olsr.AssignStreams (remoteNodes, 1);
@@ -247,6 +315,8 @@ int main(int argc, char *argv[]){
     address.Assign (WifiDirectadhocDevices);
   }
 
+  GenInterfaces(remoteNodes);
+
   if (!wifiDirect){
     PlaceApplication<HyraxExperimentApp>(remoteNodes.Begin(), remoteNodes.End(), "RemoteStation");
     //PlaceApplication<HyraxExperimentApp>(remoteNodes_alt.Begin(), remoteNodes_alt.End(), "RemoteStation");
@@ -271,7 +341,8 @@ int main(int argc, char *argv[]){
     "Use Wifi-Direct: " << (wifiDirect ? "yes" : "no") << std::endl <<
     "Using Exclusive Servers: " << (exclusive ? "yes" : "no") << std::endl <<
     "Seed: " << seed << std::endl <<
-    "===================" << std::endl;
+    "===================" << std::endl <<
+    "my_ip\t\tserver_ip\tg_ip\tc_id" << std::endl;
 
   //ns3::Config::Connect ("/NodeList/2/DeviceList/*/Phy/State/RxOk",MakeCallback(&PhyRxOkTrace));
 
@@ -281,9 +352,7 @@ int main(int argc, char *argv[]){
 
 	return EXIT_SUCCESS;
 }
-
-
-
+ 
 template <typename T>
 void PlaceApplication(ns3::NodeContainer::Iterator begin, ns3::NodeContainer::Iterator end, std::string role){
 

@@ -71,7 +71,7 @@ ns3::YansWifiChannelHelper channel = ns3::YansWifiChannelHelper::Default ();
 ns3::YansWifiPhyHelper phy = ns3::YansWifiPhyHelper::Default ();
 
 //std::string phy_type = "802.11ac";
-//ns3::VhtWifiMacHelper mac = ns3::VhtWifiMacHelper::Default ();
+ns3::VhtWifiMacHelper VHTMac = ns3::VhtWifiMacHelper::Default ();
 
 std::string phy_type = "802.11n";
 ns3::HtWifiMacHelper mac = ns3::HtWifiMacHelper::Default ();
