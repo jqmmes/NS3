@@ -115,11 +115,8 @@ private:
 	* Temporary for TDLS experiment.
 	**/
 	void genServerListSpecial(void);
-	bool m_tdls_active = false;
-	uint32_t m_tdls_interface = 0;
 	ns3::Ipv4Address m_server = ns3::Ipv4Address("0.0.0.0");
-
-
+	uint32_t MAX_TDLS_SIM = 12;
 };
 
 #endif

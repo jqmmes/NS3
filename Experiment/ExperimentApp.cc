@@ -106,25 +106,23 @@ void HyraxExperimentApp::genServerListSpecial(){
 	if (debug) std::cout << "genServerListSpecial" << std::endl;
 	std::stringstream ip;
 	uint32_t n_clients = m_n_nodes - m_n_servers;
-
 	uint32_t overbookedThreshold = 0;
-
+	uint32_t n_tlds_cons = 0;
 	if (n_clients > 2*m_n_servers) overbookedThreshold = n_clients-(2*m_n_servers);
-
-
 	for (uint32_t c_id = 1; c_id <= n_clients; c_id++){
 		ip << "10.1.2." << m_n_servers+c_id;
-		if (ns3::Ipv4Address(ip.str().c_str()) == m_address){ // Aplicar um round-robin para a escolha do servidor. Aqui sei o meu Client ID
-			uint32_t g_id = (c_id-1) % std::min(m_n_servers,(uint32_t)12); //My group ID
-
+		if (ns3::Ipv4Address(ip.str().c_str()) == m_address){ // Aqui sei o meu Client ID e aplico um Round Robin
+			uint32_t g_id = (c_id-1) % std::min(m_n_servers,(uint32_t)MAX_TDLS_SIM); // My group ID
 			ip.str(std::string());
-
-			if (c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0){
-				ip << "10.1.2." << (c_id % m_n_servers) + 1; // Round Robin	and AP access
+			if ((c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0)
+				 || (overbookedThreshold == 0 && c_id>MAX_TDLS_SIM)){
+				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
+			}else if (m_n_servers + (g_id-overbookedThreshold) > MAX_TDLS_SIM){
+					ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
 			}else{
-				m_tdls_active = true; //Activate TDLS on this node.
-				if ((c_id-1) < m_n_servers) ip << "10.2." << g_id << ".1";
-				else ip << "10.3." << g_id << ".1";
+				n_tlds_cons++;
+				if ((c_id-1) < m_n_servers) ip << "10.2." << g_id << ".1"; // usar TDLS interface 01 access
+				else ip << "10.3." << g_id << ".1"; // usar TDLS interface 02 access
 			}
 			m_server = ns3::Ipv4Address(ip.str().c_str());
 			std::cout << m_address << "\t" << m_server << "\t" << g_id << "\t" << c_id << std::endl;
@@ -210,35 +208,12 @@ void HyraxExperimentApp::Scenario_2(void){
 
 // Data is only get directly from other Nodes with AP establishing connection. TDLS
 void HyraxExperimentApp::Scenario_3(void){
-	if (debug)
-		std::cout << "Scenario3" << std::endl;
+	if (debug) std::cout << "Scenario3" << std::endl;
 	uint32_t next = randomGen->GetInteger(0, std::distance(ServerList.begin(), ServerList.end())-1);
 	socket = CreateSocket();
 	socket->Connect (ns3::InetSocketAddress(m_server, 20));
-	// if (m_tdls_active){
-	// 	socket->Connect (ns3::InetSocketAddress (AdHocServerList.at(next), 20));		
-	// }else{ // Fallback
-	// 	socket->Connect (ns3::InetSocketAddress (ServerList.at(next), 20));		
-	// }
 	fetch_init_time = ns3::Simulator::Now().GetSeconds();
 	Send(socket, "SEND\nEND\n");	
-
-
-	// ns3::Ptr<ns3::Socket> ApSocket = CreateSocket();
-	// uint32_t next = randomGen->GetInteger(0, std::distance(std::begin(ServerList), std::end(ServerList))-1);
-	// ApSocket->Connect (ns3::InetSocketAddress (ServerList.at(next), 20));
-	// socket = CreateTDLSSocket();
-	// uint32_t status = socket->Connect (ns3::InetSocketAddress (AdHocServerList.at(next), 20));
-	// //socket->Close();
-	// fetch_init_time = ns3::Simulator::Now().GetSeconds();
-	// std::cout << status << std::endl;
-	// if (status == 0){
-	// 	std::cout << ns3::Simulator::Now().GetSeconds() << "\t" << "OkTDLSConnect to " << AdHocServerList.at(next) << std::endl;
-	// 	Send(socket, "SEND\nEND\n");
-	// }else{ // Fallback
-	// 	std::cout << "Fallback to " << ServerList.at(next) << std::endl;
-	// 	Send(ApSocket, "SEND\nEND\n");
-	// }
 }
 
 void HyraxExperimentApp::SendTDLS(ns3::Ptr<ns3::Socket> socket, std::string data, ns3::Ipv4Address to){

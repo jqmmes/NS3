@@ -74,7 +74,7 @@ ns3::YansWifiPhyHelper phy = ns3::YansWifiPhyHelper::Default ();
 ns3::VhtWifiMacHelper VHTMac = ns3::VhtWifiMacHelper::Default ();
 
 std::string phy_type = "802.11n";
-ns3::HtWifiMacHelper mac = ns3::HtWifiMacHelper::Default ();
+ns3::HtWifiMacHelper HTMac = ns3::HtWifiMacHelper::Default ();
 
 // Uncomment if not using 802.11n
 // std::string phy_type = "802.11g-54mbps";
@@ -106,7 +106,6 @@ std::map<uint32_t, std::string> experiment_scenarios {
 	{52, "5b: WD + Legacy AP + m Mobile Servers + n Nodes (m<=n)"},
 	{6, "6: WD + GO + TDLS + m Mobile Servers + n Nodes (m<=n)"}
 };
-
 
 
 #endif

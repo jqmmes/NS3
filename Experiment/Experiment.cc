@@ -186,13 +186,13 @@ int main(int argc, char *argv[]){
   
   ns3::Ssid ssid = ns3::Ssid ("ns3-wifi");
 
-  mac.SetType ("ns3::StaWifiMac",
+  HTMac.SetType ("ns3::StaWifiMac",
                "Ssid", ns3::SsidValue (ssid),
                "ActiveProbing", ns3::BooleanValue (false));
 
   //ns3::NetDeviceContainer staDevices;
   
-  staDevices = wifi.Install (phy, mac, remoteNodes);
+  staDevices = wifi.Install (phy, HTMac, remoteNodes);
 
   // mac.SetType ("ns3::StaWifiMac",
   //              "Ssid", ns3::SsidValue (ns3::Ssid ("ns3-wifi-alt")),
@@ -201,13 +201,13 @@ int main(int argc, char *argv[]){
 
   if (wifiDirect){
     // Wifi Direct slaves are RS
-    wifiDirectSlaveDevices = wifi.Install(phy, mac, wifiDirectSlaves);
+    wifiDirectSlaveDevices = wifi.Install(phy, HTMac, wifiDirectSlaves);
   }
 
-  mac.SetType ("ns3::ApWifiMac",
+  HTMac.SetType ("ns3::ApWifiMac",
                "Ssid", ns3::SsidValue (ssid));
 
-  apDevices = wifi.Install (phy, mac, wifiApNode);
+  apDevices = wifi.Install (phy, HTMac, wifiApNode);
 
   // mac.SetType ("ns3::ApWifiMac",
   //              "Ssid", ns3::SsidValue (ns3::Ssid ("ns3-wifi-alt")));
@@ -216,16 +216,16 @@ int main(int argc, char *argv[]){
 
   if (wifiDirect){
     // Wifi Direct Group Owner acts as an AP
-    WifiDirectGODevices = wifi.Install(phy, mac, wifiDirectGO);
+    WifiDirectGODevices = wifi.Install(phy, HTMac, wifiDirectGO);
   }
 
-  mac.SetType ("ns3::AdhocWifiMac",
+  HTMac.SetType ("ns3::AdhocWifiMac",
                "Ssid", ns3::SsidValue (ssid));
-  adhocDevices = wifi.Install (phy, mac, remoteNodes);
+  adhocDevices = wifi.Install (phy, HTMac, remoteNodes);
 
   if (wifiDirect){
-    WifiDirectadhocGODevices = wifi.Install (phy, mac, wifiDirectGO);  
-    WifiDirectadhocDevices = wifi.Install (phy, mac, wifiDirectSlaves);
+    WifiDirectadhocGODevices = wifi.Install (phy, HTMac, wifiDirectGO);  
+    WifiDirectadhocDevices = wifi.Install (phy, HTMac, wifiDirectSlaves);
   }
 
   // Mobility
