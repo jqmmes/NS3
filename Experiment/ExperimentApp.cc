@@ -117,7 +117,7 @@ void HyraxExperimentApp::genServerListSpecial(){
 			if ((c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0)
 				 || (overbookedThreshold == 0 && c_id>MAX_TDLS_SIM)){
 				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
-			}else if (m_n_servers + (g_id-overbookedThreshold) > MAX_TDLS_SIM && g_id>overbookedThreshold){
+			}else if (m_n_servers + (g_id-overbookedThreshold) > MAX_TDLS_SIM && g_id>overbookedThreshold && overbookedThreshold != 0){
 				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
 			}else{
 				n_tlds_cons++;

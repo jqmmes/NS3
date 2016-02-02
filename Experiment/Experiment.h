@@ -21,6 +21,7 @@
 #include <iterator>
 #include <fstream>
 #include <climits>
+#include <array>
 //#include <boost/algorithm/string.hpp>
 
 // Default Network Topology
