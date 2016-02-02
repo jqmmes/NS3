@@ -128,24 +128,25 @@ void HyraxExperimentApp::genServerListSpecial(){
 			uint32_t g_id = (c_id-1) % std::min(m_n_servers,(uint32_t)MAX_TDLS_SIM); // My group ID
 			ip.str(std::string());
 
-			if ((c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0)
-				 || (overbookedThreshold == 0 && c_id>MAX_TDLS_SIM)){
-				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
-			}else if (m_n_servers + (g_id-overbookedThreshold) > MAX_TDLS_SIM && g_id>overbookedThreshold && overbookedThreshold != 0){
-				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
-			}else{
-				n_tlds_cons++;
-				if ((c_id-1) < m_n_servers){
-					ip << "10.2." << g_id << ".1"; // usar TDLS interface 01 access
-					tmp_iface = iface0;
-					m_using_tdls = true;
-				}
-				else{
-					ip << "10.3." << g_id << ".1"; // usar TDLS interface 02 access
-					tmp_iface = iface1;
-					m_using_tdls = true;
-				}
-			}
+			// if ((c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0)
+			// 	 || (overbookedThreshold == 0 && c_id>MAX_TDLS_SIM)){
+			// 	ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
+			// }else if (m_n_servers + (g_id-overbookedThreshold) > MAX_TDLS_SIM && g_id>overbookedThreshold && overbookedThreshold != 0){
+			// 	ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
+			// }else{
+			// 	n_tlds_cons++;
+			// 	if ((c_id-1) < m_n_servers){
+			// 		ip << "10.2." << g_id << ".1"; // usar TDLS interface 01 access
+			// 		tmp_iface = iface0;
+			// 		m_using_tdls = true;
+			// 	}
+			// 	else{
+			// 		ip << "10.3." << g_id << ".1"; // usar TDLS interface 02 access
+			// 		tmp_iface = iface1;
+			// 		m_using_tdls = true;
+			// 	}
+			// }
+			ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
 			m_server = ns3::Ipv4Address(ip.str().c_str());
 			std::cout << m_address << "\t" << m_server << "\t" << g_id << "\t" << c_id << std::endl;
 
@@ -248,9 +249,9 @@ void HyraxExperimentApp::Scenario_3(void){
 	if (debug) std::cout << "Scenario3" << std::endl;
 	if (not m_using_tdls){
 		ns3::Ipv4Address tmp_address = m_tdls_man->RequestIP(m_server, m_address);
-		std::cout << "Rquest new server\t" << tmp_address << std::endl;
+		if (debug) std::cout << "Rquest new server\t" << tmp_address << std::endl;
 		if (tmp_address != m_server){
-			std::cout << "new server" << std::endl;
+			if (debug) std::cout << "new server" << std::endl;
 			m_using_tdls = true;
 			m_server = tmp_address;
 		}
