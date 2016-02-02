@@ -8,6 +8,7 @@
 #include "ns3/wifi-module.h"
 #include "ns3/internet-module.h"
 #include <vector>
+#include "TdlsManager.h"
 
 struct TDLS
 {
@@ -23,7 +24,7 @@ public:
 	HyraxExperimentApp();
 	virtual ~HyraxExperimentApp();
 
-	void Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive);
+	void Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive, TdlsManager *tdlsman);
 
 private:
   virtual void StartApplication (void);
@@ -117,6 +118,9 @@ private:
 	void genServerListSpecial(void);
 	ns3::Ipv4Address m_server = ns3::Ipv4Address("0.0.0.0");
 	uint32_t MAX_TDLS_SIM = 12;
+	TdlsManager *m_tdls_man = NULL;
+	bool m_using_tdls = false;
+	ns3::Ipv4Address m_master_server_address = ns3::Ipv4Address("0.0.0.0");
 };
 
 #endif

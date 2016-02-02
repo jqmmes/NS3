@@ -22,6 +22,7 @@
 #include <fstream>
 #include <climits>
 #include <array>
+#include "TdlsManager.h"
 //#include <boost/algorithm/string.hpp>
 
 // Default Network Topology
@@ -33,10 +34,10 @@
 //           AP
 
 template <typename T>
-void AddApplication(ns3::Ptr<ns3::Node> node, std::string role);
+void AddApplication(ns3::Ptr<ns3::Node> node, std::string role, TdlsManager *tdlsman);
 
 template <typename T>
-void PlaceApplication(ns3::NodeContainer::Iterator begin, ns3::NodeContainer::Iterator end, std::string role);
+void PlaceApplication(ns3::NodeContainer::Iterator begin, ns3::NodeContainer::Iterator end, std::string role, TdlsManager *tdlsman);
 
 ns3::WifiHelper wifi = ns3::WifiHelper::Default (); // Wifi Helper
 ns3::PointToPointHelper pointToPoint; 							// PTP Helper

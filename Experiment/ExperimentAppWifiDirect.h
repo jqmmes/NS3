@@ -6,6 +6,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/internet-module.h"
+#include "TdlsManager.h"
 
 class HyraxExperimentAppWifiDirect : public ns3::Application
 {
@@ -13,7 +14,7 @@ public:
 	HyraxExperimentAppWifiDirect();
 	virtual ~HyraxExperimentAppWifiDirect();
 
-	void Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive);
+	void Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive, TdlsManager * tdlsman);
 
 private:
 	virtual void StartApplication (void);

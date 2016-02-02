@@ -13,7 +13,7 @@ HyraxExperimentAppWifiDirect::~HyraxExperimentAppWifiDirect()
 	NS_LOG_DEBUG("Destroy HyraxExperimentAppWifiDirect");
 }
 
-void HyraxExperimentAppWifiDirect::Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive){
+void HyraxExperimentAppWifiDirect::Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive, TdlsManager *tdlsman){
 	m_type = type;
 	n_nodes = NNodes;
 	n_servers = NServers;

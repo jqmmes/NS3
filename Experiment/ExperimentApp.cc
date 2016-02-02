@@ -13,7 +13,7 @@ HyraxExperimentApp::~HyraxExperimentApp()
 	NS_LOG_DEBUG("Destroy HyraxExperimentApp");
 }
 
-void HyraxExperimentApp::Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive){
+void HyraxExperimentApp::Setup(std::string type, uint32_t NNodes, uint32_t NServers, uint32_t Scenario, uint32_t FileSize, bool Debug, bool ShowPackages, bool ShowData, bool exclusive, TdlsManager *tdlsman){
 	m_n_nodes = NNodes;
 	m_n_servers = NServers;
 	m_type = type;
@@ -23,6 +23,7 @@ void HyraxExperimentApp::Setup(std::string type, uint32_t NNodes, uint32_t NServ
 	scenario_id = Scenario;
 	packet_size = FileSize;
 	exclusive_servers = exclusive;
+	m_tdls_man = tdlsman;
 }
 
 void HyraxExperimentApp::StartApplication(void)
@@ -68,7 +69,11 @@ void HyraxExperimentApp::RunSimulation(){
 			ns3::Simulator::Schedule(ns3::Seconds(randomGen->GetValue(0,0.1)), 
 			&HyraxExperimentApp::Stress_Server, this);
 	} else{
-		if (files_fetched >= files_to_fetch) return;
+		if (files_fetched >= files_to_fetch){
+			if (scenario_id == 3) 
+				m_tdls_man->UpdateStatusDone(m_master_server_address, m_address, m_using_tdls);
+			return;
+		}
 		if (scenario_id == 1){
 			if (new_sim){
 				ns3::Simulator::Schedule(ns3::Seconds(randomGen->GetValue(4,6)), 
@@ -108,12 +113,21 @@ void HyraxExperimentApp::genServerListSpecial(){
 	uint32_t n_clients = m_n_nodes - m_n_servers;
 	uint32_t overbookedThreshold = 0;
 	uint32_t n_tlds_cons = 0;
+
+
+	iface tmp_iface = ap;
+	ns3::Ipv4Address tmp_server_addr;
+	ns3::Ipv4Address tmp_iface0_addr;
+	ns3::Ipv4Address tmp_iface1_addr;
+	std::stringstream tmp_string;
+
 	if (n_clients > 2*m_n_servers) overbookedThreshold = n_clients-(2*m_n_servers);
 	for (uint32_t c_id = 1; c_id <= n_clients; c_id++){
 		ip << "10.1.2." << m_n_servers+c_id;
 		if (ns3::Ipv4Address(ip.str().c_str()) == m_address){ // Aqui sei o meu Client ID e aplico um Round Robin
 			uint32_t g_id = (c_id-1) % std::min(m_n_servers,(uint32_t)MAX_TDLS_SIM); // My group ID
 			ip.str(std::string());
+
 			if ((c_id > m_n_servers && g_id < overbookedThreshold && overbookedThreshold != 0)
 				 || (overbookedThreshold == 0 && c_id>MAX_TDLS_SIM)){
 				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
@@ -121,11 +135,34 @@ void HyraxExperimentApp::genServerListSpecial(){
 				ip << "10.1.2." << (c_id % m_n_servers) + 1; // usar AP access 
 			}else{
 				n_tlds_cons++;
-				if ((c_id-1) < m_n_servers) ip << "10.2." << g_id << ".1"; // usar TDLS interface 01 access
-				else ip << "10.3." << g_id << ".1"; // usar TDLS interface 02 access
+				if ((c_id-1) < m_n_servers){
+					ip << "10.2." << g_id << ".1"; // usar TDLS interface 01 access
+					tmp_iface = iface0;
+					m_using_tdls = true;
+				}
+				else{
+					ip << "10.3." << g_id << ".1"; // usar TDLS interface 02 access
+					tmp_iface = iface1;
+					m_using_tdls = true;
+				}
 			}
 			m_server = ns3::Ipv4Address(ip.str().c_str());
 			std::cout << m_address << "\t" << m_server << "\t" << g_id << "\t" << c_id << std::endl;
+
+			// Setup TDLS manager
+			tmp_string << "10.1.2." << (c_id % m_n_servers) + 1;
+			tmp_server_addr = ns3::Ipv4Address(tmp_string.str().c_str());
+			m_master_server_address = tmp_server_addr;
+			tmp_string.str(std::string());
+			tmp_string << "10.2." << g_id << ".1";
+			tmp_iface0_addr = ns3::Ipv4Address(tmp_string.str().c_str());
+			tmp_string.str(std::string());
+			tmp_string << "10.3." << g_id << ".1";
+			tmp_iface1_addr = ns3::Ipv4Address(tmp_string.str().c_str());
+			tmp_string.str(std::string());
+			m_tdls_man->AddNode(tmp_server_addr, m_address, tmp_iface0_addr, tmp_iface1_addr, tmp_iface, m_using_tdls);
+
+			//End
 			break;
 		}
 		ip.str(std::string());
@@ -209,6 +246,15 @@ void HyraxExperimentApp::Scenario_2(void){
 // Data is only get directly from other Nodes with AP establishing connection. TDLS
 void HyraxExperimentApp::Scenario_3(void){
 	if (debug) std::cout << "Scenario3" << std::endl;
+	if (not m_using_tdls){
+		ns3::Ipv4Address tmp_address = m_tdls_man->RequestIP(m_server, m_address);
+		if (tmp_address != m_address){
+			m_using_tdls = true;
+			m_server = tmp_address;
+		// std::cout << "hi" << std::endl;
+		// std::cout << m_tdls_man->RequestIP(m_server, m_address) << std::endl;
+		}
+	}
 	uint32_t next = randomGen->GetInteger(0, std::distance(ServerList.begin(), ServerList.end())-1);
 	socket = CreateSocket();
 	socket->Connect (ns3::InetSocketAddress(m_server, 20));

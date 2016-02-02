@@ -1,6 +1,7 @@
 #include "Experiment.h"
 #include "ExperimentApp.h"
 #include "ExperimentAppWifiDirect.h"
+//#include "TdlsManager.h"
 
 NS_LOG_COMPONENT_DEFINE ("HyraxExperiment");
 
@@ -81,6 +82,9 @@ void installInterface(ns3::NodeContainer Nodes, std::string IP_BASE){
 int main(int argc, char *argv[]){
   LogComponentEnable("HyraxExperimentApp", ns3::LOG_LEVEL_INFO);
   uint32_t seg_size = 10000;
+
+  // Create a TDLS connection manager, shared across all nodes.
+  TdlsManager tdlsMan(MobileServersN);
 
   ns3::CommandLine cmd;
   cmd.AddValue ("Nodes", "Number of Nodes to be used in the simulation", RemoteNodesN);
@@ -318,18 +322,20 @@ int main(int argc, char *argv[]){
   GenInterfaces(remoteNodes);
 
   if (!wifiDirect){
-    PlaceApplication<HyraxExperimentApp>(remoteNodes.Begin(), remoteNodes.End(), "RemoteStation");
+    PlaceApplication<HyraxExperimentApp>(remoteNodes.Begin(), remoteNodes.End(), "RemoteStation", &tdlsMan);
     //PlaceApplication<HyraxExperimentApp>(remoteNodes_alt.Begin(), remoteNodes_alt.End(), "RemoteStation");
-    PlaceApplication<HyraxExperimentApp>(serverNode.Begin(), serverNode.End(), "Server");
-    PlaceApplication<HyraxExperimentApp>(wifiApNode.Begin(), wifiApNode.End(), "AccessPoint");
+    PlaceApplication<HyraxExperimentApp>(serverNode.Begin(), serverNode.End(), "Server", &tdlsMan);
+    PlaceApplication<HyraxExperimentApp>(wifiApNode.Begin(), wifiApNode.End(), "AccessPoint", &tdlsMan);
     //PlaceApplication<HyraxExperimentApp>(wifiApNode_alt.Begin(), wifiApNode_alt.End(), "RemoteStation");
   }else{
     ns3::NodeContainer::Iterator it = wifiDirectGO.Begin();
-    PlaceApplication<HyraxExperimentAppWifiDirect>(it, std::next(it,1), "WD_GO");
+    PlaceApplication<HyraxExperimentAppWifiDirect>(it, std::next(it,1), "WD_GO", &tdlsMan);
     //it = wifiDirectSlaves.Begin();
     //std::advance(it,1);
-    PlaceApplication<HyraxExperimentAppWifiDirect>(wifiDirectSlaves.Begin(), wifiDirectSlaves.End(), "WD_Slave");
+    PlaceApplication<HyraxExperimentAppWifiDirect>(wifiDirectSlaves.Begin(), wifiDirectSlaves.End(), "WD_Slave", &tdlsMan);
   }
+
+  
 
   std::cout << 
     "===================" << std::endl <<
@@ -354,17 +360,17 @@ int main(int argc, char *argv[]){
 }
  
 template <typename T>
-void PlaceApplication(ns3::NodeContainer::Iterator begin, ns3::NodeContainer::Iterator end, std::string role){
+void PlaceApplication(ns3::NodeContainer::Iterator begin, ns3::NodeContainer::Iterator end, std::string role, TdlsManager *tdlsman){
 
   for (ns3::NodeContainer::Iterator it = begin; it != end; it++){
-    AddApplication<T>((*it), role);
+    AddApplication<T>((*it), role, tdlsman);
   }
 }
 
 template <typename T>
-void AddApplication(ns3::Ptr<ns3::Node> node, std::string role){
+void AddApplication(ns3::Ptr<ns3::Node> node, std::string role, TdlsManager *tdlsman){
     ns3::Ptr<T> App = ns3::CreateObject<T> ();
-    App->Setup(role, RemoteNodesN, MobileServersN, Scenario, FileSize, debug, show_packages, show_data, exclusive);
+    App->Setup(role, RemoteNodesN, MobileServersN, Scenario, FileSize, debug, show_packages, show_data, exclusive, tdlsman);
     node->AddApplication(App);
     App->SetStartTime (ns3::MilliSeconds (1000));
     App->SetStopTime (ns3::MilliSeconds (AppSimulationTime));
