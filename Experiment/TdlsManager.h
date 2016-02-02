@@ -37,7 +37,7 @@ class TdlsManager
 public:
   
   TdlsManager();
-  TdlsManager(uint32_t);
+  TdlsManager(uint32_t, uint32_t);
   virtual ~TdlsManager();
   void AddNode(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress, ns3::Ipv4Address iface0, ns3::Ipv4Address iface1, iface iface, bool tdls);
   ns3::Ipv4Address RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress);
@@ -56,8 +56,10 @@ public:
 	// uint32_t GetN(void);
 
 private:
+	uint32_t m_perc = 100;
+
 	ns3::Ptr<ns3::UniformRandomVariable> randomGen = ns3::CreateObject<ns3::UniformRandomVariable>();
-	
+
 	uint32_t m_n_servers = 0;
 	//uint32_t m_tlds_cons = 0; // Active TDLS connections
 	//uint32_t m_max_tdls = 12; // Maximum TDLS connections

@@ -8,9 +8,10 @@ TdlsManager::TdlsManager(){
 	m_n_servers = 0;
 }
 
-TdlsManager::TdlsManager(uint32_t NServers){
+TdlsManager::TdlsManager(uint32_t NServers, uint32_t SuccPerc){
 	NS_LOG_DEBUG("Init TdlsManager");
 	m_n_servers = NServers;
+	m_perc = SuccPerc;
 }
 
 TdlsManager::~TdlsManager(){
@@ -40,9 +41,9 @@ void TdlsManager::AddNode(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeA
 ns3::Ipv4Address TdlsManager::RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress){
 	iface tmp_iface = ap;
 	//std::cout << ServerUsers[serverAddress] << std::endl;
-
+	std::cout << m_perc << std::endl;
 	// roll a die
-	if (randomGen->GetInteger(1, 6) > 3) return serverAddress;
+	if (randomGen->GetInteger(0, 100) > m_perc) return serverAddress;
 
 	if (ServerUsers[serverAddress] < 3){ //Vais usar TDLS e tem duas interfaces abertas
 		for (auto it = ServerStatus[serverAddress].begin(); it != ServerStatus[serverAddress].end(); it++){

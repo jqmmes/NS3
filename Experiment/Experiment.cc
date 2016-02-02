@@ -96,8 +96,7 @@ int main(int argc, char *argv[]){
   LogComponentEnable("HyraxExperimentApp", ns3::LOG_LEVEL_INFO);
   uint32_t seg_size = 10000;
 
-  // Create a TDLS connection manager, shared across all nodes.
-  TdlsManager tdlsMan(MobileServersN);
+  
 
   ns3::CommandLine cmd;
   cmd.AddValue ("Nodes", "Number of Nodes to be used in the simulation", RemoteNodesN);
@@ -110,11 +109,15 @@ int main(int argc, char *argv[]){
   cmd.AddValue ("Seed", "Seed to be used", seed);
   cmd.AddValue ("ExclusiveServers", "Use Exclusive Server. (Server Dont act as Client)", exclusive);
   cmd.AddValue ("SegmentSize", "TCP Socket Segment Size", seg_size);
+  cmd.AddValue ("TDLSSuccPerc", "TDLS Connection Success Percent", tdls_succ_perc);
   cmd.Parse (argc, argv);
   //if (Scenario == 42 && MobileServersN == 1) RemoteNodesN++;
   if (Scenario != 1 && Scenario != 41 && exclusive) RemoteNodesN += MobileServersN; // Except for scenario 1 and 4a
   wifiDirect = ((Scenario > 3) ? true : false);
   ns3::RngSeedManager::SetSeed(seed);
+
+  // Create a TDLS connection manager, shared across all nodes.
+  TdlsManager tdlsMan(MobileServersN, tdls_succ_perc);
 
   if (!wifiDirect){
     pointToPoint.SetDeviceAttribute ("DataRate", ns3::StringValue ("1000Mbps")); // 1Gbps

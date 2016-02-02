@@ -96,6 +96,7 @@ bool show_packages = false; // debug
 bool show_data = false; // debug
 uint32_t seed = 1893;
 bool exclusive = false;
+uint32_t tdls_succ_perc = 100;
 
 std::map<uint32_t, std::string> experiment_scenarios {
 	{1, "1: 1 Server + AP + n Nodes"},
