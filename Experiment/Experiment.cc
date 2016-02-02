@@ -32,25 +32,38 @@ void GenInterfaces(ns3::NodeContainer Nodes){
     s << "10.2." << g << ".0";
     std::cout << s.str() << std::endl;
 
-    if (groups.at(g).size() > 3){ // Isto so funciona para os casos normais. Quando ouver mais de 12 servers, nao funciona.
-      // Install 1 TDLS interface on server and first client.
-      auto it = begin(groups.at(g));
-      tmpNodeContainer.Add(Nodes.Get((*it)));
-      it++;
-      tmpNodeContainer.Add(Nodes.Get((*it)));
-      
-      installInterface(tmpNodeContainer, s.str());
-    }else{
-      // Install 2 TDLS interfaces on server and on all clients 1.
-      for (auto it = begin(groups.at(g)); it != end(groups.at(g)); it++){
+    // This is new. All nodes have all interfaces
+    installInterface(Nodes, s.str());
+    s.str();
+    s << "10.3." << g << ".0";
+    installInterface(Nodes, s.str());
+    continue;
+
+    // Skip this
+      if (groups.at(g).size() > 3){ // Isto so funciona para os casos normais. Quando ouver mais de 12 servers, nao funciona.
+        // Install 1 TDLS interface on server and first client.
+        auto it = begin(groups.at(g));
         tmpNodeContainer.Add(Nodes.Get((*it)));
+        it++;
+        tmpNodeContainer.Add(Nodes.Get((*it)));
+        
+        installInterface(tmpNodeContainer, s.str());
+        s.str();
+        // this is new -----
+        s << "10.3." << g << ".0";
+        installInterface(tmpNodeContainer, s.str());
+        //-----
+      }else{
+        // Install 2 TDLS interfaces on server and on all clients 1.
+        for (auto it = begin(groups.at(g)); it != end(groups.at(g)); it++){
+          tmpNodeContainer.Add(Nodes.Get((*it)));
+        }
+        installInterface(tmpNodeContainer, s.str());
+        s.str();
+        s << "10.3." << g << ".0";
+        installInterface(tmpNodeContainer, s.str());
       }
-      installInterface(tmpNodeContainer, s.str());
-      s.str();
-      s << "10.3." << g << ".0";
-      installInterface(tmpNodeContainer, s.str());
     }
-  }
 }
 
 void installInterface(ns3::NodeContainer Nodes, std::string IP_BASE){

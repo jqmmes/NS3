@@ -27,9 +27,9 @@ enum connection {regular, tdls};
 
 class TdlsStatus{
 public:
-	status status;
-	iface iface;
-	connection connection;
+	status m_status;
+	iface m_iface;
+	connection m_connection;
 };
 
 class TdlsManager

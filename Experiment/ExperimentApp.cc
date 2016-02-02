@@ -248,11 +248,11 @@ void HyraxExperimentApp::Scenario_3(void){
 	if (debug) std::cout << "Scenario3" << std::endl;
 	if (not m_using_tdls){
 		ns3::Ipv4Address tmp_address = m_tdls_man->RequestIP(m_server, m_address);
-		if (tmp_address != m_address){
+		std::cout << "Rquest new server\t" << tmp_address << std::endl;
+		if (tmp_address != m_server){
+			std::cout << "new server" << std::endl;
 			m_using_tdls = true;
 			m_server = tmp_address;
-		// std::cout << "hi" << std::endl;
-		// std::cout << m_tdls_man->RequestIP(m_server, m_address) << std::endl;
 		}
 	}
 	uint32_t next = randomGen->GetInteger(0, std::distance(ServerList.begin(), ServerList.end())-1);
