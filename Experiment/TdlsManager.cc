@@ -31,9 +31,6 @@ void TdlsManager::AddNode(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeA
 
 	ServerUsers[serverAddress]++;
 
-	// tirar esta interface da lista de interfaces disponiveis.
-	//openIfaces.erase(std::find(openIfaces.begin(), openIfaces.end(), iface));
-
 	ServersIps[serverAddress][iface0] = iface0Address;
 	ServersIps[serverAddress][iface1] = iface1Address;
 }
@@ -41,7 +38,7 @@ void TdlsManager::AddNode(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeA
 ns3::Ipv4Address TdlsManager::RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress){
 	iface tmp_iface = ap;
 	//std::cout << ServerUsers[serverAddress] << std::endl;
-	std::cout << m_perc << std::endl;
+	// std::cout << m_perc << std::endl;
 	// roll a die
 	if (randomGen->GetInteger(0, 100) > m_perc) return serverAddress;
 
@@ -74,12 +71,4 @@ void TdlsManager::UpdateStatusDone(ns3::Ipv4Address serverAddress, ns3::Ipv4Addr
 	if (using_tdls){
 		ServerTDLSUsers[serverAddress]--;
 	}
-	//std::cout << "updatestatus TDLS Users\t" << ServerTDLSUsers[serverAddress] << std::endl;
 }
-
-// void TdlsManager::UpdateStatusDoneTDLS(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress){
-// 	ServerStatus[serverAddress][NodeAddress].m_status = stopped;
-// 	ServerUsers[serverAddress]--;
-// 	ServerTDLSUsers[serverAddress]--;
-// 	//openIfaces.emplace(openIfaces.end(), ServerStatus[serverAddress][NodeAddress].m_iface);
-// }
