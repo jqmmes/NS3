@@ -71,7 +71,7 @@ void HyraxExperimentApp::RunSimulation(){
 	} else{
 		if (files_fetched >= files_to_fetch){
 			if (scenario_id == 3) 
-				m_tdls_man->UpdateStatusDone(m_master_server_address, m_address, m_using_tdls);
+			 	m_tdls_man->UpdateStatusDone(m_master_server_address, m_address, m_using_tdls);
 			return;
 		}
 		if (scenario_id == 1){
@@ -86,6 +86,10 @@ void HyraxExperimentApp::RunSimulation(){
 			ns3::Simulator::Schedule(ns3::Seconds(randomGen->GetValue(0,0.1)), 
 				&HyraxExperimentApp::Scenario_2, this);
 		}else if (scenario_id == 3){
+			if (m_using_tdls && not persistent_connection){
+				m_tdls_man->UpdateStatusTdls(m_master_server_address, m_address);
+				m_using_tdls = false;
+			}
 			ns3::Simulator::Schedule(ns3::Seconds(randomGen->GetValue(0,0.1)), 
 				&HyraxExperimentApp::Scenario_3, this);
 		}

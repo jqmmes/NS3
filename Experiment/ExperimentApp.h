@@ -71,7 +71,7 @@ private:
 
 	// General data
 	uint32_t m_n_nodes;
-	uint32_t files_to_fetch = 10;
+	uint32_t files_to_fetch = 20;
 	uint32_t files_fetched = 0;
 	uint32_t server_files_fetched = 0;
 	double fetch_init_time;
@@ -121,6 +121,7 @@ private:
 	TdlsManager *m_tdls_man = NULL;
 	bool m_using_tdls = false;
 	ns3::Ipv4Address m_master_server_address = ns3::Ipv4Address("0.0.0.0");
+	bool persistent_connection = true; // Nao manter uma ligacao persistente. Tentar ligar e obter ligacao tdls a cada pedido.
 };
 
 #endif

@@ -72,3 +72,9 @@ void TdlsManager::UpdateStatusDone(ns3::Ipv4Address serverAddress, ns3::Ipv4Addr
 		ServerTDLSUsers[serverAddress]--;
 	}
 }
+
+void TdlsManager::UpdateStatusTdls(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress){
+	ServerTDLSUsers[serverAddress]--;
+	ServerStatus[serverAddress][NodeAddress].m_iface = ap;
+	//std::get<1>((*it)).m_iface == ap;
+}

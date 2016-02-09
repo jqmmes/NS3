@@ -42,6 +42,7 @@ public:
   void AddNode(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress, ns3::Ipv4Address iface0, ns3::Ipv4Address iface1, iface iface, bool tdls);
   ns3::Ipv4Address RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress);
   void UpdateStatusDone(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress, bool using_tdls=false); // Ao acabar sem tdls marcar-se como feito.
+  void UpdateStatusTdls(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress); // Informar a meio que nao estou a usar tdls. isto usa-se quando quero coneccao por ficheiro e nao persistente
 
 private:
 	uint32_t m_perc = 100;
