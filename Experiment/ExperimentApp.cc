@@ -252,7 +252,7 @@ void HyraxExperimentApp::Scenario_2(void){
 void HyraxExperimentApp::Scenario_3(void){
 	if (debug) std::cout << "Scenario3" << std::endl;
 	if (not m_using_tdls){
-		ns3::Ipv4Address tmp_address = m_tdls_man->RequestIP(m_server, m_address);
+		ns3::Ipv4Address tmp_address = m_tdls_man->RequestIP(m_master_server_address, m_address);
 		if (debug) std::cout << "Rquest new server\t" << tmp_address << std::endl;
 		if (tmp_address != m_server){
 			if (debug) std::cout << "new server" << std::endl;

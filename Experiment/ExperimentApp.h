@@ -121,7 +121,7 @@ private:
 	TdlsManager *m_tdls_man = NULL;
 	bool m_using_tdls = false;
 	ns3::Ipv4Address m_master_server_address = ns3::Ipv4Address("0.0.0.0");
-	bool persistent_connection = true; // Nao manter uma ligacao persistente. Tentar ligar e obter ligacao tdls a cada pedido.
+	bool persistent_connection = false; // Nao manter uma ligacao persistente. Tentar ligar e obter ligacao tdls a cada pedido.
 };
 
 #endif
