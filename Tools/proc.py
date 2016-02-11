@@ -59,9 +59,9 @@ for p in [5,10,15,20,25,30,35,40,45,50,55,60,75]:
                     stdout.write(str(720.0-(calcLoad(tot, 1.0)/succ_open)).replace(".", ","))
             else:
                 stdout.write(str(sum(tot)/len(tot)).replace(".", ","))
-            if show_sd:
-                stdout.write("; ")
-                stdout.write(str(iconfidence(tot)).replace(".", ","))
+        if show_sd:
+            stdout.write("; ")
+            stdout.write(str(iconfidence(tot)).replace(".", ","))
         if s != 8:
             stdout.write("; ")
         else:

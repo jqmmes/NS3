@@ -37,6 +37,7 @@ for row in data[1:]:
     row = row.split(";")
     if len(row) < len(header):
         continue
+    print len(row)
     print "        \\addplot[color=%s, mark=square]" % (colors[c%len(colors)])
     print "        plot[error bars/.cd, y dir=both, y explicit]"
     print "        coordinates {" 
