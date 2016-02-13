@@ -40,7 +40,7 @@ ns3::Ipv4Address TdlsManager::RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv
 	//std::cout << ServerUsers[serverAddress] << std::endl;
 	// std::cout << m_perc << std::endl;
 	// roll a die
-	if (randomGen->GetInteger(0, 100) >= m_perc) return serverAddress;
+	if (randomGen->GetInteger(0, 99) >= m_perc) return serverAddress;
 
 	if (ServerUsers[serverAddress] < 3){ //Vais usar TDLS e tem duas interfaces abertas
 		for (auto it = ServerStatus[serverAddress].begin(); it != ServerStatus[serverAddress].end(); it++){
@@ -67,10 +67,13 @@ ns3::Ipv4Address TdlsManager::RequestIP(ns3::Ipv4Address serverAddress, ns3::Ipv
 
 void TdlsManager::UpdateStatusDone(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress, bool using_tdls){
 	ServerStatus[serverAddress][NodeAddress].m_status = stopped;
-	ServerUsers[serverAddress]--;
+	if (ServerUsers[serverAddress] > 0){
+		ServerUsers[serverAddress]--;
+	}
 	if (using_tdls && ServerTDLSUsers[serverAddress] > 0){
 		ServerTDLSUsers[serverAddress]--;
 	}
+	ServerStatus[serverAddress][NodeAddress].m_iface = ap;
 }
 
 void TdlsManager::UpdateStatusTdls(ns3::Ipv4Address serverAddress, ns3::Ipv4Address NodeAddress){

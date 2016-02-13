@@ -89,6 +89,7 @@ void HyraxExperimentApp::RunSimulation(){
 			if (m_using_tdls && not persistent_connection){
 				m_tdls_man->UpdateStatusTdls(m_master_server_address, m_address);
 				m_using_tdls = false;
+				m_server = m_master_server_address;
 			}
 			ns3::Simulator::Schedule(ns3::Seconds(randomGen->GetValue(0,0.1)), 
 				&HyraxExperimentApp::Scenario_3, this);
@@ -305,9 +306,10 @@ void HyraxExperimentApp::Send(ns3::Ptr<ns3::Socket> socket, std::string data){
 	}else{
 		std::string local = data.substr(0, tx_size);
 		socket->Send(reinterpret_cast<const uint8_t *>(local.c_str()), tx_size, 0);
+		total_sent_data += tx_size;
 		if (socket->GetErrno () == 0){
 			data.erase(0, tx_size);
-			total_sent_data += tx_size;
+			//total_sent_data += tx_size;
 		}else{
 			std::cout << "Socket Error - " << socket->GetErrno () << "\n";
 		}
@@ -449,6 +451,10 @@ void HyraxExperimentApp::ReadData(ns3::Ptr<ns3::Socket> socket, ns3::Address fro
 				std::cout << ns3::Simulator::Now().GetSeconds() << ": " << m_address << " Got DATA (" << line.size()+10 << " bytes) from " << ns3::InetSocketAddress::ConvertFrom (from).GetIpv4() << std::endl;
 			}else{ 
 				if (!measure_only_server && !measure_data)
+					if (m_using_tdls)
+						std::cout << "TDLS\t";
+					else
+						std::cout << "AP\t";
 					std::cout << m_address << "\t" << ns3::Simulator::Now().GetSeconds() - fetch_init_time << std::endl;
 			}
 			files_fetched++;
